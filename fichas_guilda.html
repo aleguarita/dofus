@@ -136,7 +136,12 @@
     height: 30px;
     border-radius: 8px;
     flex-shrink: 0;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+    /* box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); */
+    margin: 0;
+
+    img {
+      max-width: 100%;
+    }
   }
 
   .item-name{
@@ -265,7 +270,7 @@
     <table>
       <thead>
         <tr>
-          <!-- <th>Item</th> -->
+          <th></th>
           <th>Nome</th>
           <th>Limite</th>
           <th>Preço (fichas)</th>
@@ -313,7 +318,7 @@
     { id: 'ambar-de-marmula',        nome: 'Âmbar de Marmula',        limite: 6,  preco: 15, vermelho: false, cor: 'linear-gradient(135deg,#c3bcb0,#867e72)' },
     { id: 'seixo-solar',             nome: 'Seixo solar',             limite: 2,  preco: 30, vermelho: false, cor: 'linear-gradient(135deg,#ffdd7a,#c28a12)' },
     { id: 'seixo-radiante',          nome: 'Seixo Radiante',          limite: 2,  preco: 45, vermelho: false, cor: 'linear-gradient(135deg,#fff3c2,#e8b400)' },
-    { id: 'seixo-incandescente',     nome: 'Seixo incandescente',     limite: 2,  preco: 80, vermelho: true,  cor: 'linear-gradient(135deg,#ff8a4c,#b3160c)' }
+    { id: 'seixo-incandescente',     nome: 'Seixo incandescente',     limite: 2,  preco: 80, vermelho: false,  cor: 'linear-gradient(135deg,#ff8a4c,#b3160c)' }
   ];
 
   // ---- localStorage helpers ----
@@ -361,7 +366,7 @@
     ITEMS.forEach(function(item){
       html +=
         '<tr data-id="' + item.id + '">' +
-          '<!--<td><div class="icon" style="background:' + item.cor + '"></div></td>-->' +
+          '<td><figure class="icon"><img src="assets/img/' + item.id + '.png" /></figure></td>' +
           '<td><span class="item-name' + (item.vermelho ? ' red-name' : '') + '">' + item.nome + '</span></td>' +
           '<td>' + item.limite + '</td>' +
           '<td><div class="price-cell"><span class="coin"></span>' + item.preco + '</div></td>' +
