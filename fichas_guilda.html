@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Fichas de Guilda</title>
+<style>
+  :root{
+    --bg: #17171a;
+    --panel: #1f2023;
+    --row: #232427;
+    --row-alt: #262729;
+    --border: #333437;
+    --text: #eceef1;
+    --text-dim: #9a9ca3;
+    --gold: #e9b949;
+    --gold-dim: #b98f2f;
+    --red: #e0435c;
+    --green: #4caf7d;
+    --accent: #7c8cff;
+    --radius: 10px;
+    font-family: "Segoe UI", Roboto, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    padding: 28px 20px 60px;
+  }
+
+  .wrap{
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  h1{
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    letter-spacing: 0.2px;
+  }
+
+  .subtitle{
+    color: var(--text-dim);
+    font-size: 13.5px;
+    margin: 0 0 26px;
+  }
+
+  .fichas-bar{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .fichas-bar label{
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .fichas-bar input{
+    width: 110px;
+    font-size: 16px;
+  }
+
+  .coin{
+    display:inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffe89a, var(--gold) 60%, var(--gold-dim) 100%);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+    vertical-align: -2px;
+  }
+
+  .table-scroll{
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel);
+  }
+
+  table{
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 880px;
+  }
+
+  thead th{
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody tr{
+    background: var(--row);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr:nth-child(even){
+    background: var(--row-alt);
+  }
+
+  tbody tr.bloqueado{
+    opacity: 0.45;
+  }
+
+  td{
+    padding: 10px 10px;
+    font-size: 13.5px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .item-cell{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .icon{
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+  }
+
+  .item-name{
+    font-weight: 600;
+  }
+
+  .item-name.red-name{
+    color: var(--red);
+  }
+
+  input[type="number"]{
+    background: #141517;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 7px 9px;
+    font-size: 13.5px;
+    width: 92px;
+  }
+
+  input[type="number"]:focus{
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  input[type="checkbox"]{
+    width: 17px;
+    height: 17px;
+    accent-color: var(--red);
+    cursor: pointer;
+  }
+
+  .lucro-pos{ color: var(--green); }
+  .lucro-neg{ color: var(--red); }
+
+  .price-cell{
+    display:flex;
+    align-items:center;
+    gap: 6px;
+  }
+
+  section.sugestao{
+    margin-top: 26px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  section.sugestao h2{
+    font-size: 15px;
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+
+  .sugestao-lista{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sugestao-lista li{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--row);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+  }
+
+  .sugestao-lista li .nome{
+    font-weight: 600;
+  }
+
+  .sugestao-lista li .custo{
+    color: var(--gold);
+    font-weight: 600;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .sugestao-vazio{
+    color: var(--text-dim);
+    font-size: 13.5px;
+  }
+
+  .restam{
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 13.5px;
+    color: var(--text-dim);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .restam strong{
+    color: var(--text);
+  }
+
+  @media (max-width: 640px){
+    body{ padding: 18px 12px 40px; }
+    h1{ font-size: 19px; }
+    .fichas-bar{ padding: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Calculadora de Fichas de guilda</h1>
+  <p class="subtitle">Preencha o valor de venda de cada item para calcular lucro e a melhor combinação de compra.</p>
+
+  <div class="fichas-bar">
+    <label for="fichasDisponiveis">Fichas Disponíveis</label>
+    <input type="number" id="fichasDisponiveis" min="0" step="1">
+  </div>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <!-- <th>Item</th> -->
+          <th>Nome</th>
+          <th>Limite</th>
+          <th>Preço (fichas)</th>
+          <th>Venda / unid.</th>
+          <th>Valor / ficha</th>
+          <th>Lucro</th>
+          <th>Lucro %</th>
+          <th>Não comprar</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-corpo"></tbody>
+    </table>
+  </div>
+
+  <section class="sugestao">
+    <h2>Melhor combinação de compra</h2>
+    <ul class="sugestao-lista" id="sugestao-lista"></ul>
+    <div class="restam">
+      Restam <span class="coin"></span> <strong id="restam-valor">0</strong> fichas
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- Constantes ----
+  var TAXA_MERCADO = 0.03;
+  var CUSTO_FICHAS = 1000;
+  var DIFERENCA_MAXIMA = 10;
+
+  // ---- Dados dos itens ----
+  var ITEMS = [
+    { id: 'seixo-carmim',            nome: 'Seixo carmim',            limite: 2,  preco: 1,  vermelho: false, cor: 'linear-gradient(135deg,#e0435c,#8a1224)' },
+    { id: 'seixo-sazonal',           nome: 'Seixo sazonal',           limite: 2,  preco: 1,  vermelho: false, cor: 'linear-gradient(135deg,#e4d3ad,#a9926a)' },
+    { id: 'trama-dimensional',       nome: 'Trama Dimensional',       limite: 6,  preco: 5,  vermelho: false, cor: 'linear-gradient(135deg,#8a6bff,#ff6fa8)' },
+    { id: 'turmalina',               nome: 'Turmalina',               limite: 10, preco: 7,  vermelho: false, cor: 'linear-gradient(135deg,#2fae6c,#0d5c34)' },
+    { id: 'fragmento-de-anomalia',   nome: 'Fragmento de Anomalia',   limite: 6,  preco: 8,  vermelho: false, cor: 'linear-gradient(135deg,#eef3fb,#b9c6de)' },
+    { id: 'seixo-rutilante',         nome: 'Seixo rutilante',         limite: 2,  preco: 10, vermelho: false, cor: 'linear-gradient(135deg,#5c7a5c,#233623)' },
+    { id: 'seixo-lunar',             nome: 'Seixo lunar',             limite: 2,  preco: 10, vermelho: false, cor: 'linear-gradient(135deg,#59c9a0,#1f6349)' },
+    { id: 'neuronio-de-dragoperu',   nome: 'Neurônio de Dragoperu',   limite: 6,  preco: 15, vermelho: false, cor: 'radial-gradient(circle at 35% 35%,#ffcf6b,#a5580f)' },
+    { id: 'chifre-de-vulkornio',     nome: 'Chifre de Vulkórnio',     limite: 4,  preco: 15, vermelho: false, cor: 'linear-gradient(135deg,#fbfbfb,#c7c7c7)' },
+    { id: 'tecido-misterioso',       nome: 'Tecido Misterioso',       limite: 6,  preco: 15, vermelho: false, cor: 'linear-gradient(135deg,#5a9a48,#1f3d16)' },
+    { id: 'ambar-de-marmula',        nome: 'Âmbar de Marmula',        limite: 6,  preco: 15, vermelho: false, cor: 'linear-gradient(135deg,#c3bcb0,#867e72)' },
+    { id: 'seixo-solar',             nome: 'Seixo solar',             limite: 2,  preco: 30, vermelho: false, cor: 'linear-gradient(135deg,#ffdd7a,#c28a12)' },
+    { id: 'seixo-radiante',          nome: 'Seixo Radiante',          limite: 2,  preco: 45, vermelho: false, cor: 'linear-gradient(135deg,#fff3c2,#e8b400)' },
+    { id: 'seixo-incandescente',     nome: 'Seixo incandescente',     limite: 2,  preco: 80, vermelho: true,  cor: 'linear-gradient(135deg,#ff8a4c,#b3160c)' }
+  ];
+
+  // ---- localStorage helpers ----
+  function lsGetNumber(key, def){
+    var v = localStorage.getItem(key);
+    if(v === null || v === '' || isNaN(Number(v))) return def;
+    return Number(v);
+  }
+  function lsGetBool(key, def){
+    var v = localStorage.getItem(key);
+    if(v === null) return def;
+    return v === 'true';
+  }
+  function lsSet(key, value){
+    localStorage.setItem(key, String(value));
+  }
+
+  // ---- Fórmulas ----
+  function calcularLucro(precoFichas, valorVenda){
+    var custoProduto = CUSTO_FICHAS * precoFichas;
+    var valorVendaFinal = valorVenda - (valorVenda * TAXA_MERCADO);
+    return Math.round(valorVendaFinal - custoProduto);
+  }
+
+  function calcularPorcentagem(precoFichas, lucro){
+    if(!precoFichas) return 0;
+    var valorPorFicha = lucro / precoFichas;
+    return (valorPorFicha / CUSTO_FICHAS) * 100;
+  }
+
+  // ---- Formatação ----
+  function fmt(n){
+    return Math.round(n).toLocaleString('pt-BR');
+  }
+  function fmtPct(n){
+    return n.toFixed(2).replace('.', ',') + '%';
+  }
+
+  // ---- Referências de DOM por item ----
+  var refs = {}; // id -> { row, vendaInput, valorFichaEl, lucroEl, pctEl, checkbox }
+
+  function montarTabela(){
+    var tbody = document.getElementById('tabela-corpo');
+    var html = '';
+    ITEMS.forEach(function(item){
+      html +=
+        '<tr data-id="' + item.id + '">' +
+          '<!--<td><div class="icon" style="background:' + item.cor + '"></div></td>-->' +
+          '<td><span class="item-name' + (item.vermelho ? ' red-name' : '') + '">' + item.nome + '</span></td>' +
+          '<td>' + item.limite + '</td>' +
+          '<td><div class="price-cell"><span class="coin"></span>' + item.preco + '</div></td>' +
+          '<td><input type="number" min="0" step="1" data-role="venda" data-id="' + item.id + '"></td>' +
+          '<td data-role="valorficha">0</td>' +
+          '<td data-role="lucro">0</td>' +
+          '<td data-role="pct">0%</td>' +
+          '<td style="text-align:center"><input type="checkbox" data-role="bloqueado" data-id="' + item.id + '"></td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+
+    ITEMS.forEach(function(item){
+      var row = tbody.querySelector('tr[data-id="' + item.id + '"]');
+      refs[item.id] = {
+        row: row,
+        vendaInput: row.querySelector('[data-role="venda"]'),
+        valorFichaEl: row.querySelector('[data-role="valorficha"]'),
+        lucroEl: row.querySelector('[data-role="lucro"]'),
+        pctEl: row.querySelector('[data-role="pct"]'),
+        checkbox: row.querySelector('[data-role="bloqueado"]')
+      };
+
+      // Carrega valores salvos
+      var vendaSalva = lsGetNumber('venda_' + item.id, 0);
+      refs[item.id].vendaInput.value = vendaSalva;
+
+      var bloqueadoDefault = item.vermelho; // itens com nome em vermelho vêm marcados por padrão
+      var bloqueado = lsGetBool('bloqueado_' + item.id, bloqueadoDefault);
+      refs[item.id].checkbox.checked = bloqueado;
+
+      // Listeners
+      refs[item.id].vendaInput.addEventListener('input', function(){
+        lsSet('venda_' + item.id, refs[item.id].vendaInput.value === '' ? 0 : refs[item.id].vendaInput.value);
+        recalcularItem(item);
+        atualizarSugestao();
+      });
+
+      refs[item.id].checkbox.addEventListener('change', function(){
+        lsSet('bloqueado_' + item.id, refs[item.id].checkbox.checked);
+        row.classList.toggle('bloqueado', refs[item.id].checkbox.checked);
+        atualizarSugestao();
+      });
+
+      row.classList.toggle('bloqueado', bloqueado);
+    });
+  }
+
+  function recalcularItem(item){
+    var r = refs[item.id];
+    var venda = Number(r.vendaInput.value) || 0;
+    var valorPorFicha = item.preco ? (venda / item.preco) : 0;
+    var lucro = calcularLucro(item.preco, venda);
+    var pct = calcularPorcentagem(item.preco, lucro);
+
+    r.valorFichaEl.textContent = valorPorFicha;
+    r.lucroEl.textContent = fmt(lucro);
+    r.lucroEl.className = lucro >= 0 ? 'lucro-pos' : 'lucro-neg';
+    r.pctEl.textContent = fmtPct(pct);
+    r.pctEl.className = pct >= 0 ? 'lucro-pos' : 'lucro-neg';
+
+    item._lucro = lucro;
+    item._pct = pct;
+  }
+
+  function recalcularTudo(){
+    ITEMS.forEach(recalcularItem);
+  }
+
+  // ---- Fichas disponíveis ----
+  var fichasInput = document.getElementById('fichasDisponiveis');
+  fichasInput.value = lsGetNumber('fichasDisponiveis', 50);
+  fichasInput.addEventListener('input', function(){
+    lsSet('fichasDisponiveis', fichasInput.value === '' ? 0 : fichasInput.value);
+    atualizarSugestao();
+  });
+
+  // ---- Sugestão de compra ----
+  function calcularMelhorCompra(fichasDisponiveis){
+    var candidatos = ITEMS
+      .filter(function(item){ return !refs[item.id].checkbox.checked; })
+      .slice()
+      .sort(function(a, b){ return b._pct - a._pct; });
+
+    var restante = fichasDisponiveis;
+    var resultado = [];
+    var pctAnterior = null;
+
+    for(var i = 0; i < candidatos.length; i++){
+      var item = candidatos[i];
+      if(restante <= 0) break;
+
+      if(pctAnterior !== null){
+        var diferenca = pctAnterior - item._pct;
+        if(diferenca > DIFERENCA_MAXIMA) break;
+      }
+
+      var qtdMaxPorFichas = item.preco ? Math.floor(restante / item.preco) : 0;
+      var qtd = Math.min(item.limite, qtdMaxPorFichas);
+
+      pctAnterior = item._pct;
+
+      if(qtd > 0){
+        var custo = qtd * item.preco;
+        restante -= custo;
+        resultado.push({ nome: item.nome, qtd: qtd, custo: custo });
+      }
+    }
+
+    return { resultado: resultado, restante: restante };
+  }
+
+  function atualizarSugestao(){
+    var fichas = Number(fichasInput.value) || 0;
+    var compra = calcularMelhorCompra(fichas);
+    var lista = document.getElementById('sugestao-lista');
+
+    if(compra.resultado.length === 0){
+      lista.innerHTML = '<li class="sugestao-vazio" style="justify-content:flex-start;background:transparent;border:none;padding:2px 0">Nenhum item vale a compra com o valor atual de fichas.</li>';
+    } else {
+      lista.innerHTML = compra.resultado.map(function(r){
+        return '<li>' +
+          '<span class="nome">' + r.nome + ' (' + r.qtd + ') ' + '</span>' +
+          '<span class="custo"><span class="coin"></span>' + fmt(r.custo) + '</span>' +
+        '</li>';
+      }).join('');
+    }
+
+    document.getElementById('restam-valor').textContent = fmt(compra.restante);
+  }
+
+  // ---- Inicialização ----
+  montarTabela();
+  recalcularTudo();
+  atualizarSugestao();
+})();
+</script>
+</body>
+</html>
