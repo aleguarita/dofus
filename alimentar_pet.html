@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dofus: alimentos pets</title>
+<link rel="stylesheet" href="assets/css/estilo_pet.css">
+</head>
+<body>
+
+<header class="app-header">
+  <h1>🐾 Dofus: alimentos pets</h1>
+  <div class="idioma-switch">
+    <label for="idioma-select">Idioma dos recursos</label>
+    <select id="idioma-select">
+      <option value="pt">Português</option>
+      <option value="en">English</option>
+    </select>
+  </div>
+</header>
+
+<main>
+
+  <section class="cards-grid">
+
+    <!-- Card: Preço base -->
+    <div class="card" id="card-preco-base">
+      <h2>Preço base da ração</h2>
+
+      <div class="campo">
+        <label for="input-preco-racao">Preço da Ração Vitaminada</label>
+        <div class="campo-linha">
+          <input type="number" min="0" step="0.01" id="input-preco-racao" data-price-id="RACAO_ID">
+          <button class="btn-reset" data-reset="preco-racao" title="Zerar">↺</button>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="input-preco-koli">Preço da bolsa de kolifichas</label>
+        <div class="campo-linha">
+          <input type="number" min="0" step="0.01" id="input-preco-koli">
+          <button class="btn-reset" data-reset="preco-koli" title="Zerar">↺</button>
+        </div>
+        <small class="derivado">Koli → ração: <span id="valor-koli-para-racao">-</span></small>
+      </div>
+
+      <div class="campo">
+        <label for="input-preco-pepitas">Preço de 100 pepitas</label>
+        <div class="campo-linha">
+          <input type="number" min="0" step="0.01" id="input-preco-pepitas">
+          <button class="btn-reset" data-reset="preco-pepitas" title="Zerar">↺</button>
+        </div>
+        <small class="derivado">Pepitas → ração: <span id="valor-pepita-para-racao">-</span></small>
+      </div>
+
+      <div class="resultado-base">
+        <span>Preço base (racaoPrecoBase):</span>
+        <strong id="valor-racao-preco-base">-</strong>
+      </div>
+      <div class="resultado-base">
+        <span>Preço por XP (precoBase):</span>
+        <strong id="valor-preco-base">-</strong>
+      </div>
+    </div>
+
+    <!-- Card: XP -->
+    <div class="card" id="card-xp">
+      <h2>Experiência do pet</h2>
+
+      <div class="campo">
+        <label for="input-xp-atual">XP atual</label>
+        <div class="campo-linha">
+          <input type="number" min="0" step="1" id="input-xp-atual" value="0">
+          <button class="btn-reset" data-reset="xp-atual" title="Voltar ao padrão (0)">↺</button>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="input-nivel-desejado">Nível desejado</label>
+        <div class="campo-linha">
+          <input type="number" min="1" max="100" step="1" id="input-nivel-desejado" value="100">
+          <button class="btn-reset" data-reset="nivel-desejado" title="Voltar ao padrão (100)">↺</button>
+        </div>
+      </div>
+
+      <div class="resultado-base">
+        <span>Nível atual:</span>
+        <strong id="valor-nivel-atual">-</strong>
+      </div>
+      <div class="resultado-base">
+        <span>XP para o nível <span id="label-nivel-x">100</span>:</span>
+        <strong id="valor-xp-para-nivel">-</strong>
+      </div>
+      <div class="resultado-base destaque-resultado">
+        <span>XP faltando:</span>
+        <strong id="valor-xp-faltando">-</strong>
+      </div>
+    </div>
+
+    <!-- Card: Escolha de recurso -->
+    <div class="card" id="card-escolha">
+      <h2>Simulação por recurso</h2>
+
+      <div class="campo">
+        <label for="input-escolha-recurso">Recurso</label>
+        <div class="campo-linha">
+          <input type="text" id="input-escolha-recurso" list="datalist-recursos" data-price-id="">
+          <button class="btn-reset" data-reset="escolha-recurso" title="Voltar para Ração Vitaminada">↺</button>
+        </div>
+        <datalist id="datalist-recursos"></datalist>
+      </div>
+
+      <div class="resultado-base">
+        <span>Quantidade necessária:</span>
+        <strong id="valor-escolha-qtd">-</strong>
+      </div>
+
+      <div class="campo">
+        <label for="input-escolha-preco">Preço do recurso</label>
+        <div class="campo-linha">
+          <input type="number" min="0" step="0.01" id="input-escolha-preco" data-price-id="">
+        </div>
+      </div>
+
+      <div class="resultado-base destaque-resultado">
+        <span>Preço estimado:</span>
+        <strong id="valor-escolha-estimado">-</strong>
+      </div>
+    </div>
+
+    <!-- Card: Porcentagem almejada -->
+    <div class="card card-destaque" id="card-porcentagem">
+      <h2>🎯 Porcentagem almejada</h2>
+      <div class="campo">
+        <label for="input-porcentagem-almejada">Meta de custo em relação à ração (%)</label>
+        <div class="campo-linha">
+          <input type="number" min="0" max="100" step="1" id="input-porcentagem-almejada" value="50">
+          <button class="btn-reset" data-reset="porcentagem-almejada" title="Voltar ao padrão (50%)">↺</button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Tabela de recursos -->
+  <section class="card table-card">
+    <h2>Tabela de recursos</h2>
+
+    <div class="filtros">
+      <div class="filtro-campo">
+        <label for="filtro-nome">Nome contém</label>
+        <input type="text" id="filtro-nome" placeholder="ex: carne, arr...">
+      </div>
+      <div class="filtro-campo filtro-checkbox">
+        <label><input type="checkbox" id="filtro-almejado"> Dentro da % almejada</label>
+      </div>
+      <div class="filtro-campo filtro-checkbox">
+        <label><input type="checkbox" id="filtro-favoritos"> Somente favoritos</label>
+      </div>
+      <div class="filtro-botoes">
+        <button id="btn-filtrar" class="btn-primario">Confirmar filtro</button>
+        <button id="btn-limpar-filtro" class="btn-secundario">Limpar</button>
+      </div>
+    </div>
+
+    <div class="ordenacao">
+      <label for="sort-field">Ordenar por</label>
+      <select id="sort-field">
+        <option value="nome">Nome</option>
+        <option value="qtd">Qtd. necessária</option>
+        <option value="preco">Preço</option>
+        <option value="estimado">Preço estimado</option>
+      </select>
+      <button id="sort-dir-btn" class="btn-secundario" title="Inverter ordem">▲ Crescente</button>
+      <span class="contagem" id="contagem-resultados"></span>
+    </div>
+
+    <div class="table-wrapper">
+      <table id="tabela-recursos">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>XP</th>
+            <th>Qtd. necessária</th>
+            <th>Preço</th>
+            <th>%</th>
+            <th>Preço estimado total</th>
+            <th>1x almejado</th>
+            <th>10x almejado</th>
+            <th>100x almejado</th>
+            <th>1000x almejado</th>
+            <th>Favorito</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-body"></tbody>
+      </table>
+    </div>
+
+    <div class="paginacao">
+      <button id="pag-anterior" class="btn-secundario">◀ Anterior</button>
+      <span id="pag-info">Página 1 de 1</span>
+      <button id="pag-proxima" class="btn-secundario">Próxima ▶</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="assets/js/recursos_data.js"></script>
+<script src="assets/js/xp_data.js"></script>
+<script src="assets/js/alimentar_pet.js"></script>
+</body>
+</html>
