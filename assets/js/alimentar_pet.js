@@ -192,7 +192,7 @@
     valorXpFaltando: document.getElementById('valor-xp-faltando'),
 
     inputEscolhaRecurso: document.getElementById('input-escolha-recurso'),
-    datalistRecursos: document.getElementById('datalist-recursos'),
+    escolhaSugestoes: document.getElementById('escolha-recurso-sugestoes'),
     valorEscolhaQtd: document.getElementById('valor-escolha-qtd'),
     inputEscolhaPreco: document.getElementById('input-escolha-preco'),
     valorEscolhaEstimado: document.getElementById('valor-escolha-estimado'),
@@ -218,22 +218,70 @@
   el.inputPrecoRacao.dataset.priceId = String(RACAO_ID);
 
   // ---------------------------------------------------------------------
-  // Datalist de recursos (nome -> id, conforme idioma)
+  // Autocomplete de recursos (nome -> id, conforme idioma)
   // ---------------------------------------------------------------------
   var nomeParaId = new Map();
-  function reconstruirDatalist() {
+  var sugestaoAtivaIdx = -1;
+  var LIMITE_SUGESTOES = 40;
+
+  function reconstruirIndiceNomes() {
     nomeParaId.clear();
-    var frag = document.createDocumentFragment();
     for (var i = 0; i < RECURSOS.length; i++) {
-      var r = RECURSOS[i];
-      var nome = nomeRecurso(r);
-      nomeParaId.set(nome, r.id);
-      var opt = document.createElement('option');
-      opt.value = nome;
-      frag.appendChild(opt);
+      nomeParaId.set(nomeRecurso(RECURSOS[i]), RECURSOS[i].id);
     }
-    el.datalistRecursos.innerHTML = '';
-    el.datalistRecursos.appendChild(frag);
+  }
+
+  function esconderSugestoes() {
+    el.escolhaSugestoes.classList.remove('aberta');
+    el.escolhaSugestoes.innerHTML = '';
+    sugestaoAtivaIdx = -1;
+  }
+
+  function mostrarSugestoes(termo) {
+    var termoLower = termo.trim().toLowerCase();
+    var lista;
+    if (!termoLower) {
+      lista = RECURSOS.slice(0, LIMITE_SUGESTOES);
+    } else {
+      lista = RECURSOS.filter(function (r) {
+        return nomeRecurso(r).toLowerCase().indexOf(termoLower) !== -1;
+      }).slice(0, LIMITE_SUGESTOES);
+    }
+
+    sugestaoAtivaIdx = -1;
+    if (lista.length === 0) {
+      el.escolhaSugestoes.innerHTML = '<li class="vazio">Nenhum recurso encontrado</li>';
+      el.escolhaSugestoes.classList.add('aberta');
+      return;
+    }
+
+    var html = [];
+    for (var i = 0; i < lista.length; i++) {
+      html.push('<li data-id="' + lista[i].id + '">' + escapeHtml(nomeRecurso(lista[i])) + '</li>');
+    }
+    el.escolhaSugestoes.innerHTML = html.join('');
+    el.escolhaSugestoes.classList.add('aberta');
+  }
+
+  function escolherRecurso(id) {
+    var r = RECURSOS_BY_ID.get(id);
+    if (!r) return;
+    state.recursoEscolhidoId = id;
+    persist();
+    esconderSugestoes();
+    renderCardEscolha();
+    atualizarCelulasCalculadasVisiveis();
+  }
+
+  function destacarSugestao(novoIdx) {
+    var itens = el.escolhaSugestoes.querySelectorAll('li[data-id]');
+    if (itens.length === 0) return;
+    if (novoIdx < 0) novoIdx = itens.length - 1;
+    if (novoIdx >= itens.length) novoIdx = 0;
+    itens.forEach(function (li) { li.classList.remove('ativa'); });
+    itens[novoIdx].classList.add('ativa');
+    itens[novoIdx].scrollIntoView({ block: 'nearest' });
+    sugestaoAtivaIdx = novoIdx;
   }
 
   // ---------------------------------------------------------------------
@@ -431,7 +479,7 @@
   el.idiomaSelect.addEventListener('change', function () {
     state.idioma = el.idiomaSelect.value;
     persist();
-    reconstruirDatalist();
+    reconstruirIndiceNomes();
     renderCardEscolha();
     renderTabela();
   });
@@ -472,15 +520,49 @@
     atualizarTudoCalculado();
   });
 
-  // Escolha de recurso (autocomplete)
-  el.inputEscolhaRecurso.addEventListener('change', function () {
-    var texto = el.inputEscolhaRecurso.value;
-    if (nomeParaId.has(texto)) {
-      state.recursoEscolhidoId = nomeParaId.get(texto);
-      persist();
+  // Escolha de recurso (autocomplete customizado)
+  el.inputEscolhaRecurso.addEventListener('focus', function () {
+    mostrarSugestoes(el.inputEscolhaRecurso.value);
+  });
+  el.inputEscolhaRecurso.addEventListener('input', function () {
+    mostrarSugestoes(el.inputEscolhaRecurso.value);
+  });
+  el.inputEscolhaRecurso.addEventListener('keydown', function (e) {
+    var itens = el.escolhaSugestoes.querySelectorAll('li[data-id]');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!el.escolhaSugestoes.classList.contains('aberta')) mostrarSugestoes(el.inputEscolhaRecurso.value);
+      destacarSugestao(sugestaoAtivaIdx + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      destacarSugestao(sugestaoAtivaIdx - 1);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (itens.length > 0) {
+        var idx = sugestaoAtivaIdx >= 0 ? sugestaoAtivaIdx : 0;
+        escolherRecurso(Number(itens[idx].dataset.id));
+      } else if (nomeParaId.has(el.inputEscolhaRecurso.value)) {
+        escolherRecurso(nomeParaId.get(el.inputEscolhaRecurso.value));
+      }
+    } else if (e.key === 'Escape') {
+      esconderSugestoes();
     }
-    renderCardEscolha();
-    atualizarCelulasCalculadasVisiveis();
+  });
+  el.inputEscolhaRecurso.addEventListener('blur', function () {
+    // pequeno atraso para permitir que o "mousedown" na sugestão seja processado antes
+    setTimeout(function () {
+      esconderSugestoes();
+      // se o texto não corresponde a um recurso válido, volta a exibir o recurso atualmente selecionado
+      if (!nomeParaId.has(el.inputEscolhaRecurso.value)) {
+        renderCardEscolha();
+      }
+    }, 150);
+  });
+  el.escolhaSugestoes.addEventListener('mousedown', function (e) {
+    var li = e.target.closest ? e.target.closest('li[data-id]') : null;
+    if (!li) return;
+    e.preventDefault();
+    escolherRecurso(Number(li.dataset.id));
   });
 
   // Porcentagem almejada
@@ -617,7 +699,7 @@
     el.sortField.value = state.sort.field;
     el.sortDirBtn.textContent = state.sort.dir === 'asc' ? '▲ Crescente' : '▼ Decrescente';
 
-    reconstruirDatalist();
+    reconstruirIndiceNomes();
     renderCardPrecoBase();
     renderCardXP();
     renderCardEscolha();

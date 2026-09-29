@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dofus: alimentos pets</title>
-<link rel="stylesheet" href="assets/css/estilo_pet.css">
+<link rel="stylesheet" href="../assets/css/estilo_pet.css">
 </head>
 <body>
 
@@ -104,10 +104,12 @@
       <div class="campo">
         <label for="input-escolha-recurso">Recurso</label>
         <div class="campo-linha">
-          <input type="text" id="input-escolha-recurso" list="datalist-recursos" data-price-id="">
+          <div class="autocomplete-wrap">
+            <input type="text" id="input-escolha-recurso" autocomplete="off">
+            <ul id="escolha-recurso-sugestoes" class="autocomplete-list"></ul>
+          </div>
           <button class="btn-reset" data-reset="escolha-recurso" title="Voltar para Ração Vitaminada">↺</button>
         </div>
-        <datalist id="datalist-recursos"></datalist>
       </div>
 
       <div class="resultado-base">
@@ -205,8 +207,8 @@
 
 </main>
 
-<script src="assets/js/recursos_data.js"></script>
-<script src="assets/js/xp_data.js"></script>
-<script src="assets/js/alimentar_pet.js"></script>
+<script src="../assets/js/recursos_data.js"></script>
+<script src="../assets/js/xp_data.js"></script>
+<script src="../assets/js/alimentar_pet.js"></script>
 </body>
 </html>

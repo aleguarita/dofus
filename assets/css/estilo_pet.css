@@ -153,6 +153,57 @@ input.melhor-valor {
   border-color: var(--accent-dim);
 }
 
+.autocomplete-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.autocomplete-wrap input {
+  width: 100%;
+}
+
+.autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 4px 0 0 0;
+  padding: 4px 0;
+  list-style: none;
+  background: #232a35;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 30;
+  display: none;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+}
+
+.autocomplete-list.aberta {
+  display: block;
+}
+
+.autocomplete-list li {
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.autocomplete-list li:hover,
+.autocomplete-list li.ativa {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.autocomplete-list li.vazio {
+  color: var(--text-dim);
+  cursor: default;
+  font-size: 0.82rem;
+}
+
 .derivado {
   display: block;
   margin-top: 4px;
