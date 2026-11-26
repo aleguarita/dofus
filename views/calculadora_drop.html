@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<link rel="stylesheet" href="../static/css/estilo-min.css">
+<!-- <link rel="stylesheet" href="../static/css/estilo-min.css"> -->
 <title>Simulador de Drop</title>
 </head>
 <body>
@@ -15,7 +15,7 @@
 <fieldset>
   <legend>1. Grupo</legend>
   <p><button type="button" id="btnAddChar">Adicionar Personagem</button></p>
-  <table>
+  <table class="tabela">
     <thead>
       <tr><th>Em uso</th><th>Nome</th><th>PP (Prospecção)</th><th>Multiplicador final</th><th></th></tr>
     </thead>
@@ -49,7 +49,7 @@
     <p><label>Valor Unitário (Kamas): <input type="number" id="sValor" min="0" step="any"></label></p>
     <p><label>Quantidade Desejada: <input type="number" id="sQtd" min="0" step="any"></label></p>
     <h3>Resultados</h3>
-    <table>
+    <table class="tabela">
       <thead><tr><th>Personagem</th><th>Chance individual (%)</th><th>Valor médio (Kamas)</th></tr></thead>
       <tbody id="sRows"></tbody>
     </table>
@@ -64,12 +64,12 @@
     <p><label>Nome da Criatura: <input type="text" id="cNome"></label></p>
     <h3>Itens dropáveis</h3>
     <p><button type="button" id="btnAddItem">Adicionar Item</button></p>
-    <table>
+    <table class="tabela">
       <thead><tr><th>Nome do Item</th><th>Taxa de Drop Base (%)</th><th>Valor Unitário (Kamas)</th><th></th></tr></thead>
       <tbody id="cItems"></tbody>
     </table>
     <h3>Resultados</h3>
-    <table>
+    <table class="tabela">
       <thead><tr><th>Item</th><th>Chance total do grupo (ao menos 1) (%)</th><th>Valor médio esperado (Kamas)</th></tr></thead>
       <tbody id="cRows"></tbody>
     </table>
@@ -85,7 +85,7 @@
     <div id="aMonster" hidden>
       <p>Criatura selecionada: <strong id="aNome"></strong></p>
       <p><label>Grau: <select id="aGrau"></select></label></p>
-      <table>
+      <table class="tabela">
         <thead><tr><th>Item</th><th>Taxa base (%)</th><th>Valor Unitário (Kamas)</th><th>Chance total do grupo (%)</th><th>Valor médio esperado (Kamas)</th></tr></thead>
         <tbody id="aRows"></tbody>
       </table>
