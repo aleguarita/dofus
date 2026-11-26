@@ -1,0 +1,71 @@
+/* 
+ACORDEÃO
+--------------------------------------------------------------------------------
+Arcordeão básico.
+details.acordeao > summary + ::details-content
+--------------------------------------------------------------------------------
+Versão: 1.0.0.
+Arquivo criado em: 26/11/2026
+================================================================================
+*/
+@layer utils {
+    .acordeao {
+        --cor-base: var(--cor-1);
+        --cor-fundo: color-mix(in oklab, var(--cor-base) 9%, var(--cor-bg));
+        --borda: 1px solid color-mix(in oklab, var(--cor-base) 75%, var(--cor-bg));
+        --pd: .5em;
+        --tamanho-ico: 1.25em;
+
+        summary {
+            background-color: var(--cor-base);
+            color: var(--cor-fundo);
+            font-weight: bold;
+            
+        }
+
+        /* conteúdo */
+        &::details-content {
+            padding-inline: var(--pd);
+        }
+
+        /* ajutes para a animação não quebrar com a margem, adicione mais elementos
+        conforme a necessidade
+        */
+        p {
+            margin-block: 0;
+            padding-block: var(--pd);
+        }
+        
+
+        /* configuração enquanto está aberto */
+        &[open] {
+            summary {
+                .ico {
+                    transform: rotate(90deg);
+                    transition-property: transform;
+                }
+            }
+        }
+
+        /* configuração para ícone automático, sem tag no html */
+        &:not(:has(summary .ico)) {
+            --simbolo: 'do_not_disturb_on';
+
+            summary::before {
+                margin-right: var(--pd);
+                transform: initial;
+            }
+            
+            &[open] {
+                --simbolo: 'add_circle';
+            }
+        }
+
+        /* configuração para ícone inserido manualmente */
+        &:has(summary .ico) {
+            .ico:last-child {
+                margin-left: auto;
+            }
+        }
+    }
+}

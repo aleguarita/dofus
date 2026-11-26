@@ -1,0 +1,21 @@
+/*
+================================================================================
+Arquivo de ícones Material com base em https://fonts.google.com/icons.
+Estilo sharp
+Caso deseje esse estilo, altere o arquivo estilo.css, no import indicado.
+--------------------------------------------------------------------------------
+Veja esses arquivos com o comando:
+python -m guarana rodar
+--------------------------------------------------------------------------------
+Criado nesse sistema em: 26/11/2026
+Versão do Guaraná neste arquivo: 1.0.0
+================================================================================
+*/
+@layer reset {
+    @font-face {
+        font-family: 'Icones';
+        font-style: normal;
+        font-weight: 100 200 300 400 500 600 700 800 900;
+        src: url("guarana/fontes/material_symbols_sharp_[FILL,GRAD,opsz,wght].woff2") format('woff2');
+    }
+}

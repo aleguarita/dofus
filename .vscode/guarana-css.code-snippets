@@ -1,0 +1,121 @@
+{
+	"Borda teste": {
+		"scope": "css",
+		"prefix": "gua_borda_teste",
+		"body": [
+			"outline: 1px solid var(--cor-erro) !important; /*! deletar */"
+		],
+		"description": "Insere uma borda ao redor do elemento atual para ajudar a identificar o elemento na página."
+	},
+	"HSL": {
+		"scope": "css",
+		"prefix": "gua_hsl",
+		"body": [
+			"hsl(from var(--cor-$1) h s calc(l $2))"
+		],
+		"description": "Insere a função CSS para hsl()"
+	},
+	"Saturação": {
+		"scope": "css",
+		"prefix": "gua_s",
+		"body": [
+			"calc(s * $1)"
+		],
+		"description": "Insere a função de calc() para alterar percentualmente a saturação da cor já pronta para CSS - dentro de hsl(from var(--cor) h s l)"
+	},
+	"Luminosidade": {
+		"scope": "css",
+		"prefix": "gua_l",
+		"body": [
+			"calc(l * $1)"
+		],
+		"description": "Insere a função de calc() para alterar percentualmente a luminosidade da cor já pronta para CSS - dentro de hsl(from var(--cor) h s l)"
+	},
+	"Modo de cor": {
+		"scope": "css",
+		"prefix": "gua_modo",
+		"body": [
+			"@media (-prefers-color-scheme: ${1|dark, light|}) {",
+			"    $2",
+			"}"
+		],
+		"description": "Insere o container para o modo escuro"
+	},
+	"Aplica tema de cor": {
+		"scope": "css",
+		"prefix": "gua_tema",
+		"body": [
+			".tema_$1 & {",
+			"    $2",
+			"}"
+		],
+		"description": "Insere o seletor para formatar o tema"
+	},
+	"Cria tema de cor": {
+		"scope": "css",
+		"prefix": "gua_novo_tema",
+		"body": [
+			".tema_$1 {",
+			"    --modo: ${2|dark, light|}; /* escolha um para forçar ou apague essa linha */",
+			"    --tema: $1;",
+			" ",
+			"    --cor-1: hsl($3 $4% $5%);",
+			"    --cor-2: hsl($6 $7% $8%);",
+			"    --cor-3: hsl($9 $10% $11%);",
+			" ",
+			"    --cor-txt: var(--cor-$12);",
+			"    --cor-bg: hsl(0 0% 0%);",
+			"}"
+		],
+		"description": "Insere a classe de tema"
+	},
+	"Cor base": {
+		"scope": "css",
+		"prefix": "gua_cor_base",
+		"body": [
+			"--cor-base: var(--cor-$1);"
+		],
+		"description": "Insere a cor base"
+	},
+	"Cor secundaria": {
+		"scope": "css",
+		"prefix": "gua_cor_secundaria",
+		"body": [
+			"--cor-secundaria: var(--cor-$1);"
+		],
+		"description": "Insere a cor secundaria"
+	},
+	"Cor destaque": {
+		"scope": "css",
+		"prefix": "gua_cor_destaque",
+		"body": [
+			"--cor-destaque: light-dark(",
+			"    hsl(from var(--cor-$1) h s calc(l * $2)),",
+			"    hsl(from var(--cor-$1) h s calc(l * $3))",
+			");"
+		],
+		"description": "Insere e formata a cor de destaque baseado no tema do sistema"
+	},
+	"Cor suave": {
+		"scope": "css",
+		"prefix": "gua_cor_suave",
+		"body": [
+			"--cor-suave: light-dark(",
+			"    hsl(from var(--cor-$1) h s calc(l * $2)),",
+			"    hsl(from var(--cor-$1) h s calc(l * $3))",
+			");"
+		],
+		"description": "Insere e formata a cor suave baseado no tema do sistema"
+	},
+
+	"Ícone": {
+		"scope": "css",
+		"prefix": "gua_ico",
+		"body": [
+			"content: \"$1\";",
+			"font-family: \"Icones\";",
+			"font-weight: ${2|400,100,200,300,500,600,700,800,900|};"
+		],
+		"description": "Insere um ícone como pseudoelemento"
+	}
+}

@@ -1,0 +1,57 @@
+/*
+================================================================================
+MENU
+--------------------------------------------------------------------------------
+HTML base para a criação
+<nav class="menu">
+<a class="menu__link" href="">Link</a>
+</nav>
+
+Snippets: gua_menu para a base e gua_menu_link para cada item
+--------------------------------------------------------------------------------
+Existe mais variáveis que são usadas mas não estão aqui por herdarem um valor
+padrão. Rode a documentação e veja em /menu
+--------------------------------------------------------------------------------
+Versão: 1.0.0.
+Arquivo criado em: 26/11/2026
+================================================================================
+*/
+
+@layer utils {
+    /* BASE */
+    .menu {
+        --cor-base: var(--cor-1);
+        --cor-secundaria: light-dark(
+            hsl(from var(--cor-1) h s 100%),
+            hsl(from var(--cor-1) h s 0%));
+        --cor-txt: inherit;
+        --cor-link: var(--cor-secundaria);
+        --cor-hover: var(--cor-base);
+
+        --gap: .5rem;
+        --rd: inherit;
+        --sombra: inherit;
+    }
+    
+    /* ELEMENTOS FILHOS */
+    .menu__titulo {
+        --mg: 1rem 0 0;
+        --pd: 0;
+        font-size: 1.1em;
+    }
+
+    .menu__link {
+        --cor-bg: var(--cor-base);
+        --pd: .5em;
+
+        &.ativo, &:hover {
+            color: var(--cor-hover);
+            --cor-bg: var(--cor-secundaria);
+        }
+    }
+
+    /* MODIFICADORES */
+    .menu--horizontal {
+        /* configuração básica na camada @layer base */
+    }
+}

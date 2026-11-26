@@ -1,0 +1,89 @@
+/*
+================================================================================
+TABELA
+--------------------------------------------------------------------------------
+Para determinar largura das colunas utilize no th do thead (ou nos td)
+os seguintes parâmetros:
+data-largura     - largura fixa
+data-largura-min - largura mínima
+data-largura-max - largura máxima
+esses parâmetros são opcionais e podem ser omitidos
+essas medidas devem ser apenas número e são medidas em PX. Caso deseje
+fazer uso de em, rem, vw, etc, chame novamente com:
+width: attr(atributo medida);
+--------------------------------------------------------------------------------
+Existe mais variáveis que são usadas mas não estão aqui por herdarem um valor
+padrão. Rode a documentação e veja em /tabela
+--------------------------------------------------------------------------------
+Versão: 1.0.0.
+Arquivo criado em: 26/11/2026
+================================================================================
+*/
+
+@layer utils {
+    .tabela {
+        --cor-base: var(--cor-1);
+        --cor-destaque: light-dark(
+            hsl(from var(--cor-base) h s calc(l * .65)),
+            hsl(from var(--cor-base) h s calc(l * 1.35)));
+        --cor-suave: light-dark(
+            hsl(from var(--cor-base) h s calc(l * 1.85)),
+            hsl(from var(--cor-base) h s calc(l * .65)));
+        --cor-bg: transparent;
+        --cor-borda: var(--cor-base);
+
+        --txt: .87em;
+        --rd: 0;
+        --borda: 1px solid;
+        --borda-horizontal: 1px;
+        --borda-vertical: 0;
+
+        --pd: 0;
+        --placeholder: var(--cor-destaque); /* para o caso de possuir input */
+
+        /* para dar a largura mínima da tabela (evitando que ela comprima mais no
+        modo responsivo, acrescente o atributo abaixo no <table> */
+        min-width: attr(data-largura-min px, 500px);
+
+        /* AJUSTES DE TEMA */
+        .tema_alto_contraste & {
+            --cor-destaque: var(--cor-base);
+        }
+    
+        /* REGIÕES DA TABELA */
+        & thead {
+            --cor-txt: var(--cor-destaque);
+            --txt: .92em;
+            --borda-horizontal: 0 2px;
+            --cor-borda: currentColor
+        }
+        & tbody {
+            border-bottom: 2px solid var(--cor-destaque);
+        }
+        & tfoot {
+            --borda-horizontal: 0 2px;
+            --cor-bg: var(--cor-destaque);
+            --cor-txt: var(--cor-suave);
+        }
+    
+        /* LINHAS E CÉLULAS */
+        tr {
+            /* zebra */
+            &:nth-child(even) {
+                --cor-bg: var(--cor-suave);
+
+                .tema_alto_contraste & {
+                    --cor-bg: var(--cor-destaque);
+                    --cor-txt: hsl(0 0% 0%);
+                }
+            }
+        }
+        th {
+            text-align: left;
+        }
+        td {
+            
+        }
+    }
+
+}

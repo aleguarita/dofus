@@ -1,0 +1,687 @@
+/*
+================================================================================
+ARQUIVO BASE DE Guaraná
+NÃO ALTERE! ELE É GERADO AUTOMATICAMENTE E TUDO SE PERDE AO ATUALIZAR
+FAÇA ALTERAÇÕES NO ARQUIVO estilo.css
+--------------------------------------------------------------------------------
+Versão: 1.0.0
+Última alteração nesse sistema em: 26/11/2026
+================================================================================
+*/
+
+/* 
+PROPRIEDADES PERSONALIZADAS BASE
+--------------------------------------------------------------------------------
+ */
+@property --cor-erro {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: hsl(358 85% 52%);
+}
+@property --cor-ok {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: hsl(128 52% 47%);
+}
+@property --cor-alerta {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: hsl(44 95% 47%);
+}
+
+@property --sans {
+    syntax: "<custom-ident>#";
+    inherits: true;
+    initial-value: Helvetica, Arial, sans-serif;
+}
+@property --serif {
+    syntax: "<custom-ident>#";
+    inherits: true;
+    initial-value: Times, Georgia, serif;
+}
+@property --tema {
+    syntax: "<string>";
+    inherits: true;
+    initial-value: "padrão";
+}
+@property --line-height {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: calc(1em + 0.5rem);
+}
+/*
+RESET
+--------------------------------------------------------------------------------
+Baseado no
+Josh's Custom CSS Reset
+https://www.joshwcomeau.com/css/custom-css-reset/
+Com alterações pontuais
+*/
+
+@layer reset {
+    :root {
+        interpolate-size: allow-keywords; /* permite animações nativas */
+    }
+
+    * {
+        --line-height: calc(1em + 0.5rem);
+        margin: 0;
+        line-height: var(--line-height);
+
+        &::before, &::after {
+            box-sizing: border-box;
+        }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+        html {
+            interpolate-size: allow-keywords;
+        }
+    }
+
+    body {
+        background-color: var(--cor-bg, light-dark(hsl(0 0% 97%), hsl(0 0% 3%)));
+        color: var(--cor-txt, light-dark(hsl(0 0% 3%), hsl(0 0 97%)));
+        font-family: var(--fonte, sans-serif);
+    }
+
+    img, picture, video, canvas, svg {
+        display: block;
+        max-width: 100%;
+    }
+
+    input, button, textarea, select {
+        font: inherit;
+    }
+
+    p, h1, h2, h3, h4, h5, h6 {
+        overflow-wrap: break-word;
+    }
+
+    p {
+        text-wrap: pretty;
+        margin-block: calc(1em + 0.5rem);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        text-wrap: balance;
+        margin-block: calc(1em + 0.5rem) 1em;
+        color: var(--cor-titulo, initial);
+        font-weight: var(--weight, initial);
+    }
+
+    h1 {
+        font-size: 2.16em;
+    }
+    h2 {
+        font-size: 1.83em;
+    }
+    h3 {
+        font-size: 1.7em;
+    }
+    h4 {
+        font-size: 1.51em;
+    }
+    h5 {
+        font-size: 1.35em;
+    }
+    h6 {
+        font-size: 1.2em;
+    }
+
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        width: 100%;
+    }
+
+    a {
+        color: var(--cor-link, initial);
+        transition: var(--transicao);
+        transition-property: color;
+
+        &:visited {
+            color: var(--cor-visitado, initial);
+        }
+        &:hover {
+            color: var(--cor-hover, initial);
+        }
+    }
+
+    /* formulário */
+    input, select, textarea {
+        accent-color: var(--cor-base, var(--cor-1));
+        background-color: var(--cor-bg, light-dark(white, black));
+        border-radius: var(--rd, 0);
+        border: var(--borda, 1px solid hsl(0 0% 20% / .3));
+        caret-color: var(--cor-destaque, initial);
+        color: var(--cor-txt, light-dark(#000, #fff));
+        line-height: var(--line-height);
+        padding: var(--pd, .3em);
+    }
+
+    textarea {
+        min-block-size: 1lh;
+    }   
+
+    [type="checkbox"], [type="radio"] {
+        --tmn: .9em;
+        --pd: 0;
+        appearance: none;
+        width: var(--tmn, 1em);
+        height: var(--tmn, 1em);
+        display: inline-block;
+        text-align: center;
+        align-content: center;
+        line-height: 0;
+        
+        &::before {
+            color: var(--cor-txt, light-dark(#fff, #000));
+            font-size: .5em;
+            font-family: system-ui;
+            display: block;
+            /* correção para que o posicionamento padrão fique correto */
+            content: ".";
+            opacity: 0;
+        }
+        &:checked::before {
+            opacity: 1;
+        }
+    }
+
+    [type="checkbox"] {
+        border-radius: .15em;
+        &:checked::before {
+            content: "✓";
+        }
+    }
+
+    [type="radio"] {
+        border-radius: 50%;
+        &:checked::before {
+            content: "●";
+        }
+    }
+
+    select, ::picker(select) {
+        appearance: base-select;
+        align-items: center;
+    }
+
+    ::picker-icon {
+        padding-inline: .15em;
+        color: var(--cor-txt, initial);
+        background-color: var(--cor-bg, initial);
+        content: "▴";
+        transform: rotate(180deg);
+        border-radius: var(--rd, 0);
+    }
+
+    ::picker(select) {
+        border: var(--borda, 1px solid hsl(0 0% 20% / .3));
+        border-radius: var(--rd, 0);
+        background-color: var(--cor-bg, light-dark(white, black));
+        box-shadow: var(--sombra, 2px 2px 0 hsl(0 0% 0% / .2));
+    }
+
+    option {
+        background-color: var(--cor-bg, transparent);
+        color: var(--cor-txt, light-dark(#000, #fff));
+
+        &:hover, &:focus {
+            background-color: var(--cor-bg, hsl(0 0% 45%));
+            border: var(--borda, 0);
+        }
+
+        &::checkmark {
+            font-family: system-ui;
+            font-size: .65em;
+        }
+    }
+
+    :focus {
+        outline: var(--outline, none);
+    }
+
+    ::placeholder {
+        color: var(--placeholder, hsl(0 0% 85%));
+    }
+
+    fieldset {
+        padding: 0;
+        border: 0;
+    }
+
+
+}
+/* 
+================================================================================
+ABAS
+Formatação básica de abas
+================================================================================
+*/
+@layer base {
+    .abas {
+        background-color: var(--cor-bg, transparent);
+        container-type: inline-size;
+        container-name: abas;
+    }
+
+    .abas__nav {
+        user-select: none;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: baseline;
+        justify-content: flex-start;
+        gap: var(--gap, 0);
+    }
+
+    .abas__item {
+        padding: var(--pd, .5em 1em);
+        background-color: var(--cor-bg, var(--cor-base));
+        color: var(--cor-txt, var(--cor-secundaria));
+        border: var(--borda, 0);
+        cursor: pointer;
+
+        &.ativo {
+            transition: var(--transicao, .5s ease-in-out 0s);
+            transition-property: background, color, border;
+        }
+    }
+
+    .abas__conteudo {
+        border: var(--borda, 0);
+        background-color: var(--cor-bg, var(--cor-secundaria));
+        padding: var(--pd, .5rem 1rem);
+
+        &:not(&.ativo) {
+            display: none;
+        }
+    }
+}
+/* 
+================================================================================
+ACORDEÃO (accordion)
+Formatação básica de acordeão
+================================================================================
+*/
+@layer base {
+    .acordeao {
+        container-type: inline-size;
+        container-name: acordeao;
+
+        overflow: hidden;
+        margin-block: var(--mg, 1rem);
+        border: var(--borda, 1px solid);
+        border-radius: var(--rd, 0);
+        box-shadow: var(--sombra, none);
+        background-color: var(--cor-fundo, light-dark(white, black));
+
+        summary {
+            user-select: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: var(--pd, .5em);
+
+            &::marker { display: none; }
+            
+        }
+
+        &::details-content {
+            block-size: 0;
+            transition:
+                block-size var(--transicao),
+                content-visibility 1s;
+            transition-behavior: allow-discrete;
+        }
+        
+
+        &[open]::details-content {
+            block-size: auto;
+        }
+
+        .ico, &:not(:has(summary .ico)) summary::before {
+            display: inline-flex;
+            align-items: center;
+            padding-inline: var(--pd);
+            align-items: center;
+            font-size: var(--tamanho-ico, 1.25em);
+            transition: var(--transicao);
+        }
+
+        /* configuração para ícone automático */
+        &:not(:has(summary .ico)) {        
+            summary {
+                &::before {
+                    content: var(--simbolo, 'add_circle');
+                    font-family: 'Icones';
+                }
+            }
+        }
+    }
+}
+/* 
+================================================================================
+AVISO
+Formatação básica de avisos
+================================================================================
+*/
+@layer base {
+    .aviso {
+        margin-block: var(--line-height);
+        padding: var(--pd);
+
+        color: light-dark(
+            hsl(from var(--cor-base) h s calc(l * .5)),
+            hsl(from var(--cor-base) h s calc(l * 1.5))
+        );
+        background-color: light-dark(
+            hsl(from var(--cor-base) h s calc(l * 1.5) / .25),
+            hsl(from var(--cor-base) h s calc(l * 0.5) / .25)
+        );
+        border: var(--borda);
+        border-radius: var(--rd);
+        box-shadow: var(--sombra);
+
+        
+        &:has(.aviso__titulo) {
+            overflow: hidden;
+        }
+    }
+    .aviso__titulo {
+        margin: calc(var(--pd) * -1);
+        margin-bottom: var(--pd);
+        padding: var(--pd);
+        display: flex;
+        align-items: center;
+
+        background-color: light-dark(
+            hsl(from var(--cor-base) h s calc(l * .5)),
+            hsl(from var(--cor-base) h s calc(l * 1.5))
+        );
+        color: light-dark(
+            hsl(from var(--cor-base) h s calc(l * 1.75)),
+            hsl(from var(--cor-base) h s calc(l * 0.25))
+        );
+
+        .ico {
+            margin-right: 1em;
+        }
+    }
+}
+/* 
+================================================================================
+BOTÕES
+Formatação básica dos botões
+================================================================================
+*/
+@layer base {
+    .bt {
+        appearance: none;
+        cursor: pointer;
+        display: inline-block;
+        font: inherit;
+        text-decoration: none;
+        line-height: var(--line-height);
+        background: none;
+        align-content: center;
+        text-align: center;
+
+        border: var(--borda, none);
+        border-radius: var(--rd, 0);        
+        color: var(--cor-txt);
+        font-size: var(--txt);
+        padding: var(--pd, .3em);
+        background-color: var(--cor-bg);
+        transition: initial;
+        box-shadow: var(--sombra);
+        
+        &:disabled, &[disabled] {
+            opacity: .5;
+            cursor: not-allowed;
+            background-color: hsl(from var(--cor-bg) h calc(s * .75) calc(l * .75));
+        }
+    }
+}
+/* 
+================================================================================
+FORMULÁRIOS
+Formatação básica dos formulários
+================================================================================
+*/
+@layer base {
+    /* O containter de todo o formulário */
+    .formulario {
+        container-type: inline-size;
+        container-name: formulario;
+        display: grid;
+        column-gap: var(--gap, .5rem);
+        row-gap: 0;
+        /* cria um sistema de grids responsivo */
+        grid-template-columns: var(--colunas, repeat(auto-fit, minmax(min(100%, 15rem), 1fr)));
+    }
+
+    /* o campo é composto de label; input (ou select, textarea) e o texto do erro (opcional) */
+    .campo,
+    .opcao {
+        display: grid;
+        margin: 0;
+        grid-column-end: initial;
+    }
+    
+    .campo {
+        grid-template-rows: subgrid;
+        grid-row: span 3;
+        margin-bottom: calc(var(--gap, .5rem) * 2);
+        color: var(--cor-txt);
+
+        &:has(> :where([type="checkbox"], [type="radio"])) {
+            input, label {
+                grid-row: 2 / 2;
+            }
+        }
+
+        label {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* esconde o .campo__erro no estado padrão */
+        &:not(:is(.campo--invalido)) {
+            .campo__erro {
+                display: none;
+            }
+        }
+    }
+
+    .campo:has(> :where([type="checkbox"], [type="radio"])),
+    .opcao {
+        grid-template-columns: calc(1em + .5ch) auto;
+        align-items: center;
+    }
+
+    /* com autocomplete */
+    /* TODO: anchor-position: mudar para isso quando todos os navegadores aceitarem */
+    .campo:has(.autocomplete) {
+        position: relative;
+
+        &:focus-within:has(.autocomplete:not(:empty)) {
+            .autocomplete {
+                display: initial;
+            }
+            .campo__erro {
+                opacity: 0;
+            }
+        }
+    }
+
+    .autocomplete {
+        position: absolute;
+        overflow: auto;
+        display: none;
+        bottom: 0;
+        transform: translateY(100%);
+        /* hack para a largura ficar do mesmo tamanho do container */
+        width: calc(100% - .1em);
+    }
+
+    .autocomplete__item {
+        display: block;
+        cursor: pointer;
+    }
+
+
+    /* campo de opções */
+    .opcoes {
+        display: flex;
+        gap: var(--gap, .5rem);
+    }
+
+
+}
+/* 
+================================================================================
+ÍCONE
+Formatação básica dos ícones
+================================================================================
+*/
+
+@layer base {
+    .ico {
+        font-family: 'Icones';
+        font-weight: normal;
+        font-style: normal;
+        font-size: var(--tamanho, max(24px, 1em));
+        line-height: var(--line-height);
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-flex;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        vertical-align: var(--v-align, bottom);
+        -webkit-font-smoothing: antialiased;
+    
+        font-variation-settings:
+        'FILL' var(--ico-fill, 0),
+        'wght' var(--weight, 400),
+        'GRAD' var(--ico-grad, 0),
+        'opsz' var(--ico-opsz, 24);
+    }
+}
+/* 
+================================================================================
+MENU
+Formatação básica do menu
+================================================================================
+*/
+@layer base {
+    .menu {
+        display: flex;
+        gap: var(--gap, .5rem);
+        flex-flow: column;
+        user-select: none; /* impede que o texto seja selecionado */
+        container-type: inline-size;
+        container-name: menu;
+    }
+    
+    .menu--horizontal {
+        flex-flow: row wrap;
+        align-items: baseline;
+        justify-content: flex-start;
+    }
+
+    .menu__link {
+        --cor-visitado: var(--cor-link);
+        transition: var(--transicao, .5s ease-in-out 0s);
+        transition-property: background, border, color;
+        background-color: var(--cor-bg, var(--cor-1));
+        padding: var(--pd, .5em);
+        text-decoration: none;
+        border-radius: var(--rd, 0);
+        box-shadow: var(--sombra);
+    }
+
+    .menu__titulo {
+        background-color: var(--cor-bg, var(--cor-1));
+        color: var(--cor-txt, initial);
+        padding: var(--pd, .5em);
+        margin: var(--mg, 1rem 0 0);
+    }
+}
+/* 
+================================================================================
+TABELA
+Formatação básica de tabela
+================================================================================
+*/
+@layer base {
+    .tabela {
+        background-color: var(--cor-bg, transparent);
+        border-radius: var(--rd, 0);
+        overflow: auto;
+
+        /* REGIÕES DA TABELA */
+        & thead {
+            font-size: var(--txt, 1em);
+        }
+        & tbody {
+            font-size: var(--txt, 1em);
+        }
+        & tfoot {
+            font-size: var(--txt, 1em);
+        }
+
+        /* LINHAS E CÉLULAS */
+        :where(tr, th) {
+            background-color: var(--cor-bg, transparent);
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            left: 0;
+        }
+
+        td, th {
+            padding: var(--pd, 0);
+            border: var(--borda, 1px solid currentColor);
+            border-inline-width: var(--borda-vertical, 1px);
+            border-block-width: var(--borda-horizontal, 0);
+            border-color: var(--cor-borda);
+            color: var(--cor-txt);
+            
+            width: attr(data-largura px, auto);
+            min-width: attr(data-largura-min px, auto);
+            max-width: attr(data-largura px, auto);
+        }
+
+        /* CÉLULAS COM APENAS UM LINK OU ITEM DE FORMULÁRIO */
+        td:has(:is(a, input, select):only-child) {
+            padding: 0;
+
+            & > * {
+                display: block;
+                padding: var(--pd, 0);
+                height: 100%;
+                width: 100%;
+            }
+            
+            & a {
+                text-decoration: none;
+            }
+
+            & input, select {
+                border: 0;
+            }
+        }
+
+    }
+
+}
+/*
+================================================================================
+IMPORTS
+================================================================================
+*/

@@ -1,0 +1,75 @@
+/*
+================================================================================
+BOTÕES
+--------------------------------------------------------------------------------
+Versão: 1.0.0.
+Arquivo criado em: 26/11/2026
+================================================================================
+*/
+@layer utils {
+    /* BOTÃO BASE */
+    .bt {
+        --cor-base: var(--cor-3);
+        --cor-bg: light-dark(
+            var(--cor-base),
+            hsl(from var(--cor-base) h s calc(l * 1.3))
+        );
+        --cor-txt: light-dark(#fff, #000);
+        --pd: .3em .6em;
+
+
+        &:hover:not(:disabled, [disabled]) {
+            --cor-bg: light-dark(
+                hsl(from var(--cor-base) h s calc(l * 1.3)),
+                hsl(from var(--cor-base) h s calc(l * .75))
+            );
+        }
+
+        &:focus:not(:disabled, [disabled]) {
+            --sombra: none;
+        }
+    }
+
+    /* variações de botões */
+    .bt--destaque {
+        --cor-base: var(--cor-2);
+    }
+
+    .bt--ok {
+        --cor-base: var(--cor-ok);
+    }
+
+    .bt--erro {
+        --cor-base: var(--cor-erro);
+    }
+
+    .bt--aviso, .bt--alerta {
+        --cor-base: var(--cor-alerta);
+    }
+
+    /* modificadores de botões (pode ser usado em conjunto com os variantes */
+    .bt--secundario {
+        --cor-txt: var(--cor-base);
+
+        box-shadow: 0 0 1px inset var(--cor-txt);
+        background-color: transparent;
+        
+        &:hover:not(:disabled, [disabled]) {
+            background-color: transparent;
+            --cor-txt: light-dark(
+                hsl(from var(--cor-base) h s calc(l * 1.3)),
+                hsl(from var(--cor-base) h s calc(l * .75))
+            );
+        }
+    }
+
+
+    /* Alterações de tamanho dos botões */
+    .bt--maior {
+        --txt: 1.2em;
+    }
+
+    .bt--menor {
+        --txt: .8em;
+    }
+}

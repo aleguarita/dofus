@@ -1,0 +1,39 @@
+/*
+================================================================================
+ÍCONE
+--------------------------------------------------------------------------------
+HTML base para a criação
+<span class="ico">home</span>
+--------------------------------------------------------------------------------
+Para saber quais ícones estão disponíveis use rode o sistema e veja na
+documentação
+--------------------------------------------------------------------------------
+Versão: 1.0.0.
+Arquivo criado em: 26/11/2026
+================================================================================
+*/
+
+
+@layer utils {
+    .ico {
+        --ico-fill: 0;
+        --ico-opsz: 24;
+        --weight: 400;
+    
+        --tamanho: max(calc(var(--ico-opsz) * 1px), 1em);
+        --v-align: bottom;
+    }
+
+    .ico--preenchido {
+        --ico-fill: 1;
+    }
+    
+    em.ico, i.ico, .ico--fino, .ico--100 {
+        --weight: 100;
+    }
+    strong.ico, b.ico, .ico--grosso, .ico--700 {
+        --weight: 700;
+    }
+
+}
+

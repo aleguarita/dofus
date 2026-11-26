@@ -1,0 +1,128 @@
+{
+	"Menu": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_menu",
+		"body": [
+            "<nav class=\"menu\">",
+			"    <a href=\"$1\", class=\"menu__item\">$2</a>$3",
+            "</nav>"
+		],
+		"description": "Insere um menu com o primeiro link"
+	},
+	"Link de menu": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_menu_link",
+		"body": [
+			"<a href=\"$1\", class=\"menu__link\">$2</a>"
+		],
+		"description": "Insere um link de menu"
+	},
+		"Estrutura de abas": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_aba_estrutura",
+		"body": [
+			"<section class\"abas\">",
+			"    <nav class=\"abas__nav\">",
+			"        $1",
+			"    </nav>",
+			"    $2",
+			"</section>"
+		],
+		"description": "Insere uma estrutura de aba inteira"
+	},
+	"Item de aba": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_aba_item",
+		"body": [
+			"<a data-aba=\"#aba_$1\" class=\"abas__item\">$2</a>"
+		],
+		"description": "Insere um item de aba"
+	},
+	"Conteúdo de aba": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_aba_conteudo",
+		"body": [
+			"<article class=\"abas__conteudo\" id=\"aba_$1\">",
+			"    $2",
+			"</article>"
+		],
+		"description": "Insere o conteúdo de uma aba"
+	},
+	"Campo input": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_campo",
+		"body": [
+			"<div class=\"campo\">",
+			"    <label for=\"$1\">$2</label>",
+			"    <input type=\"${3|text,password,number,email,file,range,tel,url,search,date,datetime-local,month,week|}\" id=\"$1\" />",
+			"    <span class=\"campo__erro\">$4</span>",
+			"</div>",
+			"$5"
+		],
+		"description": "Insere um campo de formulário"
+	},
+	"Campo de opção (checkbox ou radio button)": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_opcao",
+		"body": [
+			"<div class=\"${1|campo,opcao|}\">",
+			"    <input type=\"${2|checkbox,radio|}\" id=\"$3\"${5| ,checked |}/>",
+			"    <label for=\"$3\">$4</label>",
+			"</div>",
+			"$6"
+		],
+		"description": "Insere um checkbox ou radio button"
+	},
+	"Campo com select": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_select",
+		"body": [
+			"<div class=\"campo\">",
+			"    <label for=\"$1\">$2</label>",
+			"    <select name=\"$3\" id=\"$1\">",
+			"        <option value=\"$4\">$5</option>",
+			"        $6",
+			"    </select>",
+			"</div>"
+		],
+		"description": "Insere um campo de select"
+	},
+	"Botão": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_bt",
+		"body": [
+			"<button class=\"bt\">$1</button>"
+		],
+		"description": "Insere um campo de select"
+	},
+	
+	"Aviso": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_aviso",
+		"body": [
+			"<div class=\"aviso\">$1</div>"
+		],
+		"description": "Insere um bloco de aviso"
+	},
+
+	"Ícone": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_ico",
+		"body": [
+			"<${2|span,b,i|} class=\"ico\">$1</$2>"
+		],
+		"description": "Insere um ícone"
+	},
+
+	"Acordeão": {
+		"scope": "html, django-html, erb",
+		"prefix": "gua_acordeao",
+		"body": [
+			"<details class=\"acordeao\">",
+			"    <summary>$1</summary>",
+			"    $2",
+			"</details>",
+		]
+	}
+}
+

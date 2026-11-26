@@ -1,0 +1,154 @@
+/* 
+FORMULÁRIO
+--------------------------------------------------------------------------------
+HTML básico:
+<div class="campo">
+    <label for="id">Label</label>
+    <input type="text" id="id" placeholder="campo" />
+    <span class="campo__erro">Erro, se for o caso</span>
+</div>
+
+Snippets:
+- gua_campo (para campos comuns como os de cima)
+- gua_select (para select)
+--------------------------------------------------------------------------------
+Versão: 1.0.0.
+Arquivo criado em: 26/11/2026
+================================================================================
+*/
+@layer utils {
+    /* CONTAINER DO FORMULÁRIO */
+    .formulario {
+        /*
+================================================================================
+        modelo responsivo: preenche com colunas de até 15rem ou 100% se abaixo
+        dessa largura
+        */
+        --col-max: 15rem;
+        --colunas: repeat(auto-fit, minmax(min(100%, var(--col-max)), 1fr));
+        --gap: .5rem;
+    }
+
+    /* um campo é composto pelo label, input/select/textarea e texto de erro (opcional) */
+    .campo {
+        --cor-base: var(--cor-1);
+        --cor-secundaria: light-dark(hsl(0 0% 100% / .8), hsl(0 0% 0% / .8));
+        --cor-suave: light-dark(
+            hsl(from var(--cor-base) h s calc(l * 1.8)),
+            hsl(from var(--cor-base) h s calc(l * .2))
+        );
+        --cor-destaque: light-dark(
+            hsl(from var(--cor-base) h s calc(l * .4)),
+            hsl(from var(--cor-base) h s calc(l * 1.6))
+        );
+        --cor-bg: var(--cor-secundaria);
+        --cor-txt: var(--cor-destaque);
+
+        --rd: inherit;
+        --borda: 1px solid var(--cor-suave);
+        --outline: none;
+        --placeholder: var(--cor-suave);
+        --pd: .3em;
+        --sombra: inherit;
+
+
+        /* variações de variáveis conforme temas ou elementos internos */
+        .tema_alto_contraste & {
+            --cor-secundaria: black;
+            --cor-suave: var(--cor-base);
+            --cor-destaque: white;
+        }
+
+        &:is(.campo--invalido) {
+            --cor-base: var(--cor-erro);
+            --cor-txt: var(--cor-base);
+            --borda: 1px solid var(--cor-base);
+        }
+
+        &:focus-within {
+            --borda: 1px solid var(--cor-destaque);
+            --cor-txt: var(--cor-base);
+        }
+
+        & :checked {
+            --cor-txt: var(--cor-secundaria);
+            --cor-bg: var(--cor-base);
+        }
+        
+
+        /* formatação para todos os campos que não contenham check ou radio */
+        &:not(:has(:is([type="checkbox"], [type="radio"]))) {
+            &:focus-within {
+                --outline: 1px solid var(--cor-base);
+            }
+        }
+
+
+        /* elementos filhos */
+        label, legend {
+            font-weight: bold;
+        }
+
+        /* select: formatação da seta */
+        ::picker-icon {
+            
+        }
+
+        /* select: formatação da caixa */
+        ::picker(select) {
+            --cor-txt: var(--cor-destaque);
+            --cor-bg: hsl(from var(--cor-suave) h s calc(l * 1.25));
+            border-color: var(--cor-base);
+        }
+
+        /* select: formatação de cada item */
+        option {
+            --cor-bg: hsl(from var(--cor-secundaria) h s l / 0.3);
+
+            .tema_alto_contraste & {
+                --cor-txt: var(--cor-base);
+                --cor-bg: #000;
+            }
+            &:hover, &:focus {
+                --borda: 0;
+                --cor-bg: var(--cor-base);
+
+                .tema_alto_contraste & {
+                    --cor-txt: #000;
+                }
+            }
+        }
+
+        /* autocomplete */
+        .autocomplete {
+            background-color: var(--cor-bg);
+            border: var(--borda);
+            border-radius: var(--rd);
+            max-height: calc(8.5 * (1em + var(--pd)));
+            outline: var(--outline);
+        }
+        
+        .autocomplete__item {
+            padding: calc(var(--pd) / 2) var(--pd);
+            background-color: var(--cor-bg);
+
+            &:hover, &.ativo {
+                color: var(--cor-bg);
+                background-color: var(--cor-txt);
+            }
+        }
+
+    }
+
+    /* o texto de erro */
+    .campo__erro {
+        
+    }
+
+    .opcao,
+    .campo:has(> :is([type="checkbox"], [type="radio"])) {
+        & label {
+            font-weight: normal;
+        }
+    }
+}

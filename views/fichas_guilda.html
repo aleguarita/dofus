@@ -370,7 +370,7 @@
     ITEMS.forEach(function(item){
       html +=
         '<tr data-id="' + item.id + '">' +
-          '<td><figure class="icon"><img src="../assets/img/' + item.id + '.png" /></figure><span class="item-name' + (item.vermelho ? ' red-name' : '') + '">' + item.nome + '</span></td>' +
+          '<td><figure class="icon"><img src="../static/img/' + item.id + '.png" /></figure><span class="item-name' + (item.vermelho ? ' red-name' : '') + '">' + item.nome + '</span></td>' +
           '<td>' + item.limite + '</td>' +
           '<td><div class="price-cell"><span class="coin"></span>' + item.preco + '</div></td>' +
           '<td><input type="number" min="0" step="1" data-role="venda" data-id="' + item.id + '"></td>' +
@@ -493,7 +493,7 @@
       lista.innerHTML = compra.resultado.map(function(r){
         return '<li>' +
           '<span class="nome">' +
-            '<figure class="icon"><img src="assets/img/' + r.id + '.png" /></figure>' + 
+            '<figure class="icon"><img src="static/img/' + r.id + '.png" /></figure>' + 
             r.nome + ' (' + r.qtd + ') ' + '</span>' +
           '<span class="custo"><span class="coin"></span>' + fmt(r.custo) + '</span>' +
         '</li>';

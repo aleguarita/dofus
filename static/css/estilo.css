@@ -1,0 +1,117 @@
+/*
+================================================================================
+Arquivo principal do sistema utilizando Guaraná
+Se for o usar o estilo-min.css, altere tudo aqui e execute o comando:
+python -m guaraná min
+Se estiver trabalhando com Flask o arquivo rodar.py já inclui o comando acima
+--------------------------------------------------------------------------------
+Criado nesse sistema em: 26/11/2026
+Versão do Guaraná neste arquivo: 1.0.0
+================================================================================
+*/
+/* LAYERS */
+@layer reset, base, utils, layout, views;
+
+/* IMPORTS */
+@import url(_ico_rounded.css); /* estilo do ícone, troque pelo estilo desejado */
+@import url(_guarana_base.css);
+
+/* PROPRIEDADES PERSONALIZADAS */
+/* Paleta */
+@property --cor-1 {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: hsl(213 58% 49%);
+}
+@property --cor-2 {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: hsl(258 45% 66%);
+}
+@property --cor-3 {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: hsl(46 42% 49%);
+}
+
+/* Elementos genéricos para formatação */
+@property --mg-i { /* margem horizontal, inline */
+    syntax: "*";
+    inherits: true;
+    initial-value: auto;
+}
+@property --mg-b { /* margin vertical, bloco */
+    syntax: "*";
+    inherits: true;
+    initial-value: 0;
+}
+@property --mg { /* margem total */
+    syntax: "*";
+    inherits: true;
+    initial-value: 1rem auto;
+}
+
+@property --rd { /* para uso em border-radius */
+    syntax: "*";
+    inherits: true;
+    initial-value: 0;
+}
+@property --sombra {
+    syntax: "*";
+    inherits: true;
+    initial-value: 2px 2px 0 hsl(0 0% 0% / .1);
+}
+@property --transicao { /* sem determinar qual a propriedade */
+    syntax: "*";
+    inherits: true;
+    initial-value: .5s ease-in-out 0s;
+}
+
+
+/* modo de cor, por padrão usa tanto o claro e escuro */
+@property --modo {
+    syntax: "*";
+    inherits: true;
+    initial-value: light dark;
+}
+
+/* root */
+@layer layout {
+    :root {
+        --cor-txt: light-dark(hsl(0 0% 3%), hsl(0 0% 97%));
+        --cor-bg: light-dark(hsl(0 0% 97%), hsl(0 0% 3%));
+
+        --cor-link: var(--cor-3);
+        --cor-hover: hsl(from var(--cor-link) h s calc(l * 1.35));
+        --cor-visitado: var(--cor-link);
+        --cor-titulo: var(--cor-2);
+
+        --fonte: var(--sans);
+    
+        color-scheme: var(--modo);
+    }
+
+    /* TEMAS */
+    /* temas claro e escuro são para dar opção pro usuário não usar o modo do navegador */
+    .tema_light {
+        --modo: light;
+    }
+
+    .tema_dark {
+        --modo: dark;
+    }
+
+    .tema_alto_contraste {
+        --modo: dark;
+        --tema: "alto contraste";
+
+        --cor-1: hsl(60 100% 50%);
+        --cor-2: hsl(120 100% 50%);
+        --cor-3: hsl(0 100% 50%);
+        
+        --cor-txt: var(--cor-1);
+        --cor-bg: hsl(0 0% 0%);
+        --cor-hover: hsl(from var(--cor-base) calc(h + 175) s l);
+
+    }
+}

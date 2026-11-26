@@ -1,0 +1,43 @@
+/* 
+ABAS
+--------------------------------------------------------------------------------
+snippet VSCode para criar a estrutura no HTML: gua_aba_estrutura
+snippet VSCode para criar o item de navegação no HTML: gua_aba_item
+snippet VSCode para criar o conteúdo de navegação no HTML: gua_aba_conteudo
+--------------------------------------------------------------------------------
+Versão: 1.0.0.
+Arquivo criado em: 26/11/2026
+================================================================================
+*/
+@layer utils {
+    /* container */
+    .abas {
+        --cor-base: var(--cor-1);
+        --cor-secundaria: light-dark(hsl(0 0% 97%), hsl(0 0% 3%));
+        --cor-bg: transparent;
+        --borda: 0;
+    }
+    
+    /* a parte de navegação */
+    .abas__nav {
+        --gap: .15rem;
+    }
+
+    /* item das navegações */
+    .abas__item {
+        --pd: .5em 1em;
+        --cor-bg: var(--cor-base);
+        --cor-txt: var(--cor-secundaria);
+        
+        &.ativo {
+            --cor-bg: var(--cor-secundaria);
+            --cor-txt: var(--cor-base);
+        }
+    }
+
+    /* a parte de cada conteúdo da aba */
+    .abas__conteudo {
+        --cor-bg: var(--cor-secundaria);
+        --pd: .5rem 1rem;
+    }
+}

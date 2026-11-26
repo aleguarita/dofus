@@ -1,3 +1,4 @@
+
 (function () {
   'use strict';
 
@@ -232,7 +233,8 @@
   }
 
   function esconderSugestoes() {
-    el.escolhaSugestoes.classList.remove('aberta');
+    // o componente .autocomplete do design system se esconde sozinho quando
+    // fica vazio (regra ":has(.autocomplete:not(:empty))"), então basta limpar.
     el.escolhaSugestoes.innerHTML = '';
     sugestaoAtivaIdx = -1;
   }
@@ -250,17 +252,15 @@
 
     sugestaoAtivaIdx = -1;
     if (lista.length === 0) {
-      el.escolhaSugestoes.innerHTML = '<li class="vazio">Nenhum recurso encontrado</li>';
-      el.escolhaSugestoes.classList.add('aberta');
+      el.escolhaSugestoes.innerHTML = '<li class="autocomplete__item vazio">Nenhum recurso encontrado</li>';
       return;
     }
 
     var html = [];
     for (var i = 0; i < lista.length; i++) {
-      html.push('<li data-id="' + lista[i].id + '">' + escapeHtml(nomeRecurso(lista[i])) + '</li>');
+      html.push('<li class="autocomplete__item" data-id="' + lista[i].id + '">' + escapeHtml(nomeRecurso(lista[i])) + '</li>');
     }
     el.escolhaSugestoes.innerHTML = html.join('');
-    el.escolhaSugestoes.classList.add('aberta');
   }
 
   function escolherRecurso(id) {
@@ -531,7 +531,7 @@
     var itens = el.escolhaSugestoes.querySelectorAll('li[data-id]');
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (!el.escolhaSugestoes.classList.contains('aberta')) mostrarSugestoes(el.inputEscolhaRecurso.value);
+      if (el.escolhaSugestoes.children.length === 0) mostrarSugestoes(el.inputEscolhaRecurso.value);
       destacarSugestao(sugestaoAtivaIdx + 1);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
@@ -579,8 +579,8 @@
     atualizarTudoCalculado();
   });
 
-  // Botões de reset
-  document.querySelectorAll('.btn-reset').forEach(function (btn) {
+  // Botões de reset (identificados pelo atributo data-reset, independente da classe visual)
+  document.querySelectorAll('[data-reset]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var tipo = btn.dataset.reset;
       if (tipo === 'preco-racao') {
@@ -661,7 +661,9 @@
   });
   el.sortDirBtn.addEventListener('click', function () {
     state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
-    el.sortDirBtn.textContent = state.sort.dir === 'asc' ? '▲ Crescente' : '▼ Decrescente';
+    el.sortDirBtn.innerHTML = state.sort.dir === 'asc'
+      ? '<span class="ico" aria-hidden="true">arrow_upward_alt</span> Crescente'
+      : '<span class="ico" aria-hidden="true">arrow_downward_alt</span> Decrescente';
     persist();
     renderTabela();
   });
@@ -697,7 +699,9 @@
     el.filtroFavoritos.checked = !!state.filtroDraft.favoritos;
 
     el.sortField.value = state.sort.field;
-    el.sortDirBtn.textContent = state.sort.dir === 'asc' ? '▲ Crescente' : '▼ Decrescente';
+    el.sortDirBtn.innerHTML = state.sort.dir === 'asc'
+      ? '<span class="ico" aria-hidden="true">arrow_upward_alt</span> Crescente'
+      : '<span class="ico" aria-hidden="true">arrow_downward_alt</span> Decrescente';
 
     reconstruirIndiceNomes();
     renderCardPrecoBase();

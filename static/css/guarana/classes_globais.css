@@ -1,0 +1,26 @@
+/*
+================================================================================
+CLASSES GLOBAIS
+--------------------------------------------------------------------------------
+Esse arquivo inclui classes que podem ser usadas em alguns elementos e que 
+não são de nenhum componentem específico
+--------------------------------------------------------------------------------
+Versão: 1.0.0.
+Arquivo criado em: 26/11/2026
+================================================================================
+*/
+
+
+@layer utils {
+    /*
+    ROLAGEM X
+    Adicione essa classe a algum elemento pai cujos filhos tenham uma largura
+    mínima fixa para ter um scroll horizontal. Um exemplo disso é tabela para ser
+    bem visualizada em celulares ainda de forma tabular
+    ----------------------------------------------------------------------------
+    */
+    .rolagem_x {
+        overflow-x: auto;
+        position: relative;
+    }
+}
