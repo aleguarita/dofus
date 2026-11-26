@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="../static/css/estilo-min.css">
+<title>Simulador de Drop</title>
+</head>
+<body>
+
+<h1>Simulador de Drop</h1>
+
+<!-- Seção 1: Grupo -->
+<fieldset>
+  <legend>1. Grupo</legend>
+  <p><button type="button" id="btnAddChar">Adicionar Personagem</button></p>
+  <table>
+    <thead>
+      <tr><th>Em uso</th><th>Nome</th><th>PP (Prospecção)</th><th>Multiplicador final</th><th></th></tr>
+    </thead>
+    <tbody id="charList"></tbody>
+  </table>
+</fieldset>
+
+<!-- Seção 2: Modificadores -->
+<fieldset>
+  <legend>2. Modificadores globais da luta</legend>
+  <p><label><input type="checkbox" id="modShield"> Ankama Shield (+5%, 1.05x)</label></p>
+  <p><label>Desafio (%): <input type="number" id="modDesafio" step="any"></label></p>
+  <p><label>Anomalia (%): <input type="number" id="modAnomalia" min="0" max="120" step="any"></label></p>
+  <p><label>Extras (%): <input type="number" id="modExtras" step="any"></label></p>
+</fieldset>
+
+<!-- Seção 3: Abas -->
+<fieldset>
+  <legend>3. Simulações</legend>
+  <p>
+    <button type="button" id="tabBtn-simple">Simulação Simples</button>
+    <button type="button" id="tabBtn-creature">Simulação de Criatura</button>
+    <button type="button" id="tabBtn-adv">Simulação Avançada (DofusDB)</button>
+  </p>
+
+  <!-- Aba 1 -->
+  <div id="tab-simple">
+    <h2>Simulação Simples</h2>
+    <p><label>Nome do Produto: <input type="text" id="sNome"></label></p>
+    <p><label>Taxa de Drop Base (%): <input type="number" id="sTaxa" min="0" step="any"></label></p>
+    <p><label>Valor Unitário (Kamas): <input type="number" id="sValor" min="0" step="any"></label></p>
+    <p><label>Quantidade Desejada: <input type="number" id="sQtd" min="0" step="any"></label></p>
+    <h3>Resultados</h3>
+    <table>
+      <thead><tr><th>Personagem</th><th>Chance individual (%)</th><th>Valor médio (Kamas)</th></tr></thead>
+      <tbody id="sRows"></tbody>
+    </table>
+    <p>Valor total da luta: <strong id="sTotal">0</strong> Kamas</p>
+    <p>Chance do item sair na luta (pelo menos 1): <strong id="sGrupo">0</strong>%</p>
+    <p>Média de lutas necessárias: <strong id="sLutas">—</strong></p>
+  </div>
+
+  <!-- Aba 2 -->
+  <div id="tab-creature">
+    <h2>Simulação de Criatura (Grupo)</h2>
+    <p><label>Nome da Criatura: <input type="text" id="cNome"></label></p>
+    <h3>Itens dropáveis</h3>
+    <p><button type="button" id="btnAddItem">Adicionar Item</button></p>
+    <table>
+      <thead><tr><th>Nome do Item</th><th>Taxa de Drop Base (%)</th><th>Valor Unitário (Kamas)</th><th></th></tr></thead>
+      <tbody id="cItems"></tbody>
+    </table>
+    <h3>Resultados</h3>
+    <table>
+      <thead><tr><th>Item</th><th>Chance total do grupo (ao menos 1) (%)</th><th>Valor médio esperado (Kamas)</th></tr></thead>
+      <tbody id="cRows"></tbody>
+    </table>
+    <p>Valor total da luta com a criatura: <strong id="cTotal">0</strong> Kamas</p>
+  </div>
+
+  <!-- Aba 3 -->
+  <div id="tab-adv">
+    <h2>Simulação Avançada de Criatura (DofusDB)</h2>
+    <p><label>Buscar criatura: <input type="text" id="aBusca" autocomplete="off" placeholder="Digite o nome da criatura"></label></p>
+    <p id="aStatus"></p>
+    <ul id="aSugestoes"></ul>
+    <div id="aMonster" hidden>
+      <p>Criatura selecionada: <strong id="aNome"></strong></p>
+      <p><label>Grau: <select id="aGrau"></select></label></p>
+      <table>
+        <thead><tr><th>Item</th><th>Taxa base (%)</th><th>Valor Unitário (Kamas)</th><th>Chance total do grupo (%)</th><th>Valor médio esperado (Kamas)</th></tr></thead>
+        <tbody id="aRows"></tbody>
+      </table>
+      <p>Valor total da luta com a criatura: <strong id="aTotal">0</strong> Kamas</p>
+    </div>
+  </div>
+</fieldset>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'simuladorDrop.v1';
+  var API = 'https://api.dofusdb.fr';
+
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function $(id) { return document.getElementById(id); }
+  function num(v, def) {
+    var n = parseFloat(v);
+    return isFinite(n) ? n : (def === undefined ? 0 : def);
+  }
+  function fmt(n, d) {
+    return n.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: d === undefined ? 2 : d });
+  }
+  function el(tag, props) {
+    var e = document.createElement(tag);
+    if (props) for (var k in props) e[k] = props[k];
+    return e;
+  }
+
+  /* ---------- Estado e persistência ---------- */
+  function defaults() {
+    return {
+      chars: [{ id: uid(), active: true, name: 'Personagem 1', pp: '100' }],
+      mods: { shield: false, desafio: '60', anomalia: '60', extras: '0' },
+      tab: 'simple',
+      simple: { nome: '', taxa: '10', valor: '0', qtd: '1' },
+      creature: { nome: '', items: [{ id: uid(), nome: '', taxa: '10', valor: '0' }] },
+      adv: { query: '', monster: null, grade: 5, prices: {}, names: {} }
+    };
+  }
+
+  function load() {
+    var d = defaults();
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return d;
+      var s = JSON.parse(raw);
+      if (Array.isArray(s.chars) && s.chars.length) d.chars = s.chars;
+      if (s.mods) Object.assign(d.mods, s.mods);
+      if (s.tab) d.tab = s.tab;
+      if (s.simple) Object.assign(d.simple, s.simple);
+      if (s.creature) {
+        if (typeof s.creature.nome === 'string') d.creature.nome = s.creature.nome;
+        if (Array.isArray(s.creature.items) && s.creature.items.length) d.creature.items = s.creature.items;
+      }
+      if (s.adv) Object.assign(d.adv, s.adv);
+      if (!d.adv.prices) d.adv.prices = {};
+      if (!d.adv.names) d.adv.names = {};
+    } catch (e) { /* localStorage indisponível ou JSON inválido: usa padrões */ }
+    return d;
+  }
+
+  var state = load();
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignora */ }
+  }
+
+  /* ---------- Matemática ---------- */
+  function multPP(pp) {
+    var bruto = 0.74 + 1.755 / (1 + Math.exp((250 - pp) / 85));
+    return bruto < 1 ? Math.max(1, bruto) : bruto;
+  }
+
+  function fatorBonus() {
+    var m = state.mods;
+    var shield = m.shield ? 1.05 : 1.0;
+    var anomalia = Math.min(120, Math.max(0, num(m.anomalia)));
+    return shield * (1 + (num(m.desafio) + anomalia + num(m.extras)) / 100);
+  }
+
+  function multFinal(pp) { return multPP(pp) * fatorBonus(); }
+
+  function grupoAtivo() {
+    return state.chars.filter(function (c) { return c.active; }).map(function (c) {
+      return { name: c.name, mult: multFinal(Math.max(0, num(c.pp))) };
+    });
+  }
+
+  function chancePct(taxa, mult) { return Math.min(100, taxa * mult); }
+
+  // Retorna estatísticas do item para o grupo ativo.
+  function stats(taxa, valor, grupo) {
+    var ps = grupo.map(function (c) { return chancePct(taxa, c.mult) / 100; });
+    var prod = 1, soma = 0, vm = 0;
+    ps.forEach(function (p) { prod *= (1 - p); soma += p; vm += valor * p; });
+    return { ps: ps, chanceGrupo: (1 - prod) * 100, soma: soma, valorMedio: vm };
+  }
+
+  /* ---------- Seção 1: personagens ---------- */
+  function renderChars() {
+    var tb = $('charList');
+    tb.innerHTML = '';
+    state.chars.forEach(function (c) {
+      var tr = el('tr');
+
+      var td1 = el('td'); var cb = el('input', { type: 'checkbox', checked: !!c.active });
+      cb.setAttribute('aria-label', 'Em uso');
+      cb.addEventListener('change', function () { c.active = cb.checked; save(); recalc(); });
+      td1.appendChild(cb);
+
+      var td2 = el('td'); var nm = el('input', { type: 'text', value: c.name });
+      nm.setAttribute('aria-label', 'Nome');
+      nm.addEventListener('input', function () { c.name = nm.value; save(); recalc(); });
+      td2.appendChild(nm);
+
+      var td3 = el('td'); var pp = el('input', { type: 'number', min: '0', step: 'any', value: c.pp });
+      pp.setAttribute('aria-label', 'PP');
+      pp.addEventListener('input', function () { c.pp = pp.value; save(); recalc(); });
+      td3.appendChild(pp);
+
+      var td4 = el('td'); td4.className = 'mult'; td4.dataset.id = c.id;
+
+      var td5 = el('td'); var rm = el('button', { type: 'button', textContent: 'Remover' });
+      rm.addEventListener('click', function () {
+        state.chars = state.chars.filter(function (x) { return x.id !== c.id; });
+        save(); renderChars(); recalc();
+      });
+      td5.appendChild(rm);
+
+      [td1, td2, td3, td4, td5].forEach(function (td) { tr.appendChild(td); });
+      tb.appendChild(tr);
+    });
+  }
+
+  function updateMultCells() {
+    state.chars.forEach(function (c) {
+      var cell = document.querySelector('#charList td.mult[data-id="' + c.id + '"]');
+      if (cell) cell.textContent = fmt(multFinal(Math.max(0, num(c.pp))), 4) + 'x';
+    });
+  }
+
+  $('btnAddChar').addEventListener('click', function () {
+    state.chars.push({ id: uid(), active: true, name: 'Personagem ' + (state.chars.length + 1), pp: '100' });
+    save(); renderChars(); recalc();
+  });
+
+  /* ---------- Seção 2: modificadores ---------- */
+  function initMods() {
+    var m = state.mods;
+    $('modShield').checked = !!m.shield;
+    $('modDesafio').value = m.desafio;
+    $('modAnomalia').value = m.anomalia;
+    $('modExtras').value = m.extras;
+
+    $('modShield').addEventListener('change', function () { m.shield = this.checked; save(); recalc(); });
+    $('modDesafio').addEventListener('input', function () { m.desafio = this.value; save(); recalc(); });
+    $('modAnomalia').addEventListener('input', function () { m.anomalia = this.value; save(); recalc(); });
+    $('modAnomalia').addEventListener('change', function () {
+      var v = Math.min(120, Math.max(0, num(this.value)));
+      this.value = v; m.anomalia = String(v); save(); recalc();
+    });
+    $('modExtras').addEventListener('input', function () { m.extras = this.value; save(); recalc(); });
+  }
+
+  /* ---------- Abas ---------- */
+  var TABS = ['simple', 'creature', 'adv'];
+  function showTab(name) {
+    if (TABS.indexOf(name) < 0) name = 'simple';
+    state.tab = name;
+    TABS.forEach(function (t) {
+      $('tab-' + t).hidden = (t !== name);
+      $('tabBtn-' + t).disabled = (t === name);
+    });
+    save();
+  }
+  TABS.forEach(function (t) {
+    $('tabBtn-' + t).addEventListener('click', function () { showTab(t); });
+  });
+
+  /* ---------- Aba 1 ---------- */
+  function initSimple() {
+    var s = state.simple;
+    $('sNome').value = s.nome; $('sTaxa').value = s.taxa; $('sValor').value = s.valor; $('sQtd').value = s.qtd;
+    [['sNome', 'nome'], ['sTaxa', 'taxa'], ['sValor', 'valor'], ['sQtd', 'qtd']].forEach(function (p) {
+      $(p[0]).addEventListener('input', function () { s[p[1]] = this.value; save(); updateSimple(); });
+    });
+  }
+
+  function updateSimple() {
+    var s = state.simple, g = grupoAtivo();
+    var taxa = Math.max(0, num(s.taxa)), valor = Math.max(0, num(s.valor)), qtd = Math.max(0, num(s.qtd));
+    var st = stats(taxa, valor, g);
+    var tb = $('sRows'); tb.innerHTML = '';
+    g.forEach(function (c, i) {
+      var tr = el('tr');
+      [c.name || '(sem nome)', fmt(st.ps[i] * 100, 2), fmt(valor * st.ps[i], 2)].forEach(function (t) {
+        tr.appendChild(el('td', { textContent: t }));
+      });
+      tb.appendChild(tr);
+    });
+    $('sTotal').textContent = fmt(st.valorMedio, 2);
+    $('sGrupo').textContent = g.length ? fmt(st.chanceGrupo, 2) : '0';
+    $('sLutas').textContent = st.soma > 0 ? fmt(qtd / st.soma, 2) : '—';
+  }
+
+  /* ---------- Aba 2 ---------- */
+  function renderCreatureItems() {
+    var tb = $('cItems'); tb.innerHTML = '';
+    state.creature.items.forEach(function (it) {
+      var tr = el('tr');
+      var fields = [['nome', 'text'], ['taxa', 'number'], ['valor', 'number']];
+      fields.forEach(function (f) {
+        var td = el('td');
+        var inp = el('input', { type: f[1], value: it[f[0]] });
+        if (f[1] === 'number') { inp.min = '0'; inp.step = 'any'; }
+        inp.addEventListener('input', function () { it[f[0]] = inp.value; save(); updateCreature(); });
+        td.appendChild(inp); tr.appendChild(td);
+      });
+      var td = el('td');
+      var rm = el('button', { type: 'button', textContent: 'Remover Item' });
+      rm.addEventListener('click', function () {
+        if (state.creature.items.length <= 1) return; // mínimo 1 item
+        state.creature.items = state.creature.items.filter(function (x) { return x.id !== it.id; });
+        save(); renderCreatureItems(); updateCreature();
+      });
+      td.appendChild(rm); tr.appendChild(td);
+      tb.appendChild(tr);
+    });
+  }
+
+  function initCreature() {
+    $('cNome').value = state.creature.nome;
+    $('cNome').addEventListener('input', function () { state.creature.nome = this.value; save(); });
+    $('btnAddItem').addEventListener('click', function () {
+      state.creature.items.push({ id: uid(), nome: '', taxa: '10', valor: '0' });
+      save(); renderCreatureItems(); updateCreature();
+    });
+    renderCreatureItems();
+  }
+
+  function updateCreature() {
+    var g = grupoAtivo(), total = 0;
+    var tb = $('cRows'); tb.innerHTML = '';
+    state.creature.items.forEach(function (it) {
+      var st = stats(Math.max(0, num(it.taxa)), Math.max(0, num(it.valor)), g);
+      total += st.valorMedio;
+      var tr = el('tr');
+      [it.nome || '(sem nome)', g.length ? fmt(st.chanceGrupo, 2) : '0', fmt(st.valorMedio, 2)].forEach(function (t) {
+        tr.appendChild(el('td', { textContent: t }));
+      });
+      tb.appendChild(tr);
+    });
+    $('cTotal').textContent = fmt(total, 2);
+  }
+
+  /* ---------- Aba 3: DofusDB ---------- */
+  function langName(n, fallback) {
+    if (!n) return fallback;
+    return n.pt || n.en || n.fr || fallback;
+  }
+
+  function api(path) {
+    return fetch(API + path).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function searchMonsters(term) {
+    var langs = ['pt', 'en', 'fr'];
+    var rx = encodeURIComponent(escRegex(term));
+    function tryLang(i) {
+      if (i >= langs.length) return Promise.resolve([]);
+      var l = langs[i];
+      var path = '/monsters?name.' + l + '[$regex]=' + rx + '&name.' + l + '[$options]=i&$limit=10';
+      return api(path).then(function (res) {
+        var data = (res && res.data) || [];
+        return data.length ? data : tryLang(i + 1);
+      });
+    }
+    return tryLang(0);
+  }
+
+  function fetchItemNames(ids) {
+    var missing = ids.filter(function (id) { return !state.adv.names[id]; });
+    if (!missing.length) return Promise.resolve();
+    var chunks = [];
+    for (var i = 0; i < missing.length; i += 40) chunks.push(missing.slice(i, i + 40));
+    return Promise.all(chunks.map(function (ch) {
+      var q = ch.map(function (id) { return 'id[$in][]=' + encodeURIComponent(id); }).join('&');
+      return api('/items?' + q + '&$limit=' + ch.length).then(function (res) {
+        ((res && res.data) || []).forEach(function (it) {
+          state.adv.names[it.id] = langName(it.name, 'Item #' + it.id);
+        });
+      });
+    })).then(save);
+  }
+
+  function gradePct(drop, g) {
+    var v = drop['percentDropForGrade' + g];
+    return (v === undefined || v === null) ? null : Number(v);
+  }
+
+  function pickDefaultGrade(drops) {
+    for (var g = 5; g >= 1; g--) {
+      if (drops.some(function (d) { return gradePct(d, g) !== null; })) return g;
+    }
+    return 5;
+  }
+
+  var searchSeq = 0, debounceTimer = null;
+
+  function setStatus(t) { $('aStatus').textContent = t; }
+
+  function runSearch(term) {
+    var seq = ++searchSeq;
+    setStatus('Buscando...');
+    searchMonsters(term).then(function (list) {
+      if (seq !== searchSeq) return;
+      var ul = $('aSugestoes'); ul.innerHTML = '';
+      setStatus(list.length ? '' : 'Nenhuma criatura encontrada.');
+      list.forEach(function (m) {
+        var li = el('li');
+        var b = el('button', { type: 'button', textContent: langName(m.name, 'Monstro #' + m.id) + ' (id ' + m.id + ')' });
+        b.addEventListener('click', function () { selectMonster(m); });
+        li.appendChild(b); ul.appendChild(li);
+      });
+    }).catch(function () {
+      if (seq !== searchSeq) return;
+      setStatus('Erro ao consultar a API do DofusDB. Verifique a conexão e tente novamente.');
+    });
+  }
+
+  function selectMonster(m) {
+    var drops = (m.drops || []).map(function (d) {
+      return {
+        objectId: d.objectId,
+        pct: [1, 2, 3, 4, 5].map(function (g) { return gradePct(d, g); })
+      };
+    });
+    state.adv.monster = { id: m.id, name: langName(m.name, 'Monstro #' + m.id), drops: drops };
+    state.adv.grade = pickDefaultGrade((m.drops || []));
+    $('aSugestoes').innerHTML = '';
+    setStatus('Carregando itens...');
+    save();
+    fetchItemNames(drops.map(function (d) { return d.objectId; })).then(function () {
+      setStatus(drops.length ? '' : 'Esta criatura não possui drops cadastrados.');
+      buildAdv();
+    }).catch(function () {
+      setStatus('Não foi possível obter os nomes dos itens; exibindo IDs.');
+      buildAdv();
+    });
+  }
+
+  function buildAdv() {
+    var m = state.adv.monster;
+    $('aMonster').hidden = !m;
+    if (!m) return;
+    $('aNome').textContent = m.name;
+
+    var sel = $('aGrau'); sel.innerHTML = '';
+    for (var g = 1; g <= 5; g++) {
+      var has = m.drops.some(function (d) { return d.pct[g - 1] !== null; });
+      var o = el('option', { value: String(g), textContent: 'Grau ' + g + (has ? '' : ' (sem dados)') });
+      if (!has) o.disabled = true;
+      sel.appendChild(o);
+    }
+    sel.value = String(state.adv.grade);
+
+    var tb = $('aRows'); tb.innerHTML = '';
+    m.drops.forEach(function (d) {
+      var tr = el('tr'); tr.dataset.id = d.objectId;
+      tr.appendChild(el('td', { textContent: state.adv.names[d.objectId] || ('Item #' + d.objectId) }));
+      var tdTaxa = el('td'); tdTaxa.className = 'taxa'; tr.appendChild(tdTaxa);
+      var tdV = el('td');
+      var inp = el('input', { type: 'number', min: '0', step: 'any' });
+      var saved = state.adv.prices[d.objectId];
+      inp.value = saved === undefined ? '0' : saved;
+      inp.setAttribute('aria-label', 'Valor unitário');
+      inp.addEventListener('input', function () {
+        state.adv.prices[d.objectId] = inp.value; save(); updateAdv();
+      });
+      tdV.appendChild(inp); tr.appendChild(tdV);
+      var tdC = el('td'); tdC.className = 'chance'; tr.appendChild(tdC);
+      var tdM = el('td'); tdM.className = 'vm'; tr.appendChild(tdM);
+      tb.appendChild(tr);
+    });
+    updateAdv();
+  }
+
+  function updateAdv() {
+    var m = state.adv.monster;
+    if (!m) return;
+    var g = grupoAtivo(), total = 0, grade = state.adv.grade;
+    m.drops.forEach(function (d) {
+      var tr = document.querySelector('#aRows tr[data-id="' + d.objectId + '"]');
+      if (!tr) return;
+      var taxa = d.pct[grade - 1];
+      var valor = Math.max(0, num(state.adv.prices[d.objectId]));
+      var st = stats(Math.max(0, taxa === null ? 0 : taxa), valor, g);
+      total += st.valorMedio;
+      tr.querySelector('.taxa').textContent = taxa === null ? '—' : fmt(taxa, 4);
+      tr.querySelector('.chance').textContent = g.length ? fmt(st.chanceGrupo, 2) : '0';
+      tr.querySelector('.vm').textContent = fmt(st.valorMedio, 2);
+    });
+    $('aTotal').textContent = fmt(total, 2);
+  }
+
+  function initAdv() {
+    $('aBusca').value = state.adv.query || '';
+    $('aBusca').addEventListener('input', function () {
+      var term = this.value.trim();
+      state.adv.query = this.value; save();
+      clearTimeout(debounceTimer);
+      if (term.length < 2) { searchSeq++; $('aSugestoes').innerHTML = ''; setStatus(''); return; }
+      debounceTimer = setTimeout(function () { runSearch(term); }, 400);
+    });
+    $('aGrau').addEventListener('change', function () {
+      state.adv.grade = parseInt(this.value, 10); save(); updateAdv();
+    });
+    buildAdv();
+  }
+
+  /* ---------- Recalcular tudo ---------- */
+  function recalc() {
+    updateMultCells();
+    updateSimple();
+    updateCreature();
+    updateAdv();
+  }
+
+  /* ---------- Inicialização ---------- */
+  renderChars();
+  initMods();
+  initSimple();
+  initCreature();
+  initAdv();
+  showTab(state.tab);
+  recalc();
+
+  // Exposto para testes
+  window.__drop = { multPP: multPP, stats: stats };
+})();
+</script>
+</body>
+</html>
