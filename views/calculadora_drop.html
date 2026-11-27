@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<!-- <link rel="stylesheet" href="../static/css/estilo-min.css"> -->
 <title>Simulador de Drop</title>
 </head>
 <body>
@@ -15,7 +14,7 @@
 <fieldset>
   <legend>1. Grupo</legend>
   <p><button type="button" id="btnAddChar">Adicionar Personagem</button></p>
-  <table class="tabela">
+  <table>
     <thead>
       <tr><th>Em uso</th><th>Nome</th><th>PP (Prospecção)</th><th>Multiplicador final</th><th></th></tr>
     </thead>
@@ -49,7 +48,7 @@
     <p><label>Valor Unitário (Kamas): <input type="number" id="sValor" min="0" step="any"></label></p>
     <p><label>Quantidade Desejada: <input type="number" id="sQtd" min="0" step="any"></label></p>
     <h3>Resultados</h3>
-    <table class="tabela">
+    <table>
       <thead><tr><th>Personagem</th><th>Chance individual (%)</th><th>Valor médio (Kamas)</th></tr></thead>
       <tbody id="sRows"></tbody>
     </table>
@@ -64,12 +63,12 @@
     <p><label>Nome da Criatura: <input type="text" id="cNome"></label></p>
     <h3>Itens dropáveis</h3>
     <p><button type="button" id="btnAddItem">Adicionar Item</button></p>
-    <table class="tabela">
+    <table>
       <thead><tr><th>Nome do Item</th><th>Taxa de Drop Base (%)</th><th>Valor Unitário (Kamas)</th><th></th></tr></thead>
       <tbody id="cItems"></tbody>
     </table>
     <h3>Resultados</h3>
-    <table class="tabela">
+    <table>
       <thead><tr><th>Item</th><th>Chance total do grupo (ao menos 1) (%)</th><th>Valor médio esperado (Kamas)</th></tr></thead>
       <tbody id="cRows"></tbody>
     </table>
@@ -79,13 +78,44 @@
   <!-- Aba 3 -->
   <div id="tab-adv">
     <h2>Simulação Avançada de Criatura (DofusDB)</h2>
-    <p><label>Buscar criatura: <input type="text" id="aBusca" autocomplete="off" placeholder="Digite o nome da criatura"></label></p>
+    <p>
+      <label>Filtrar por nome (português): <input type="search" id="aBusca" autocomplete="off" placeholder="Digite parte do nome"></label>
+      <button type="button" id="aLimpar">Limpar busca</button>
+    </p>
+    <p><label>Monstros por página:
+      <select id="aLimit">
+        <option value="20">20</option>
+        <option value="40">40</option>
+        <option value="60">60</option>
+        <option value="80">80</option>
+        <option value="100">100</option>
+      </select></label></p>
+    <p>
+      <label>Ordenar por:
+        <select id="aOrdem">
+          <option value="nome">Nome</option>
+          <option value="nivel">Nível</option>
+        </select></label>
+      <label>Direção:
+        <select id="aDir">
+          <option value="asc">Crescente</option>
+          <option value="desc">Decrescente</option>
+        </select></label>
+    </p>
+    <p id="aNota"></p>
+    <div id="aErro" role="alert" hidden></div>
     <p id="aStatus"></p>
-    <ul id="aSugestoes"></ul>
+    <ul id="aLista"></ul>
+    <p>
+      <button type="button" id="aAnt">Anterior</button>
+      <span id="aPagina"></span>
+      <button type="button" id="aProx">Próxima</button>
+    </p>
+
     <div id="aMonster" hidden>
-      <p>Criatura selecionada: <strong id="aNome"></strong></p>
+      <h3>Resultado: <span id="aNome"></span></h3>
       <p><label>Grau: <select id="aGrau"></select></label></p>
-      <table class="tabela">
+      <table>
         <thead><tr><th>Item</th><th>Taxa base (%)</th><th>Valor Unitário (Kamas)</th><th>Chance total do grupo (%)</th><th>Valor médio esperado (Kamas)</th></tr></thead>
         <tbody id="aRows"></tbody>
       </table>
@@ -124,7 +154,7 @@
       tab: 'simple',
       simple: { nome: '', taxa: '10', valor: '0', qtd: '1' },
       creature: { nome: '', items: [{ id: uid(), nome: '', taxa: '10', valor: '0' }] },
-      adv: { query: '', monster: null, grade: 5, prices: {}, names: {} }
+      adv: { query: '', page: 1, limit: 20, sort: 'nome', dir: 'asc', monster: null, grade: 5, prices: {}, names: {} }
     };
   }
 
@@ -262,6 +292,7 @@
       $('tabBtn-' + t).disabled = (t === name);
     });
     save();
+    if (name === 'adv' && !advLoaded) loadList();
   }
   TABS.forEach(function (t) {
     $('tabBtn-' + t).addEventListener('click', function () { showTab(t); });
@@ -344,33 +375,226 @@
   }
 
   /* ---------- Aba 3: DofusDB ---------- */
+  var advLoaded = false, listSeq = 0, debounceTimer = null, listData = [], listTotal = 0;
+
   function langName(n, fallback) {
+    // Exibição: pt com fallback seguro para fr/en
     if (!n) return fallback;
-    return n.pt || n.en || n.fr || fallback;
+    return n.pt || n.fr || n.en || fallback;
   }
 
+  function qs(pairs) {
+    return pairs.map(function (p) {
+      return encodeURIComponent(p[0]) + '=' + encodeURIComponent(p[1]);
+    }).join('&');
+  }
+
+  function apiError(url, status, reason) {
+    var e = new Error(reason); e.url = url; e.status = status; return e;
+  }
+
+  // GET com timeout, tratamento de status não-OK, resposta vazia e JSON inválido.
   function api(path) {
-    return fetch(API + path).then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
+    var url = API + path;
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 15000);
+    return fetch(url, ctl ? { signal: ctl.signal } : undefined).then(function (r) {
+      clearTimeout(timer);
+      if (!r.ok) throw apiError(url, r.status, 'HTTP ' + r.status + ' ' + (r.statusText || ''));
+      return r.text().then(function (t) {
+        if (!t) throw apiError(url, r.status, 'Resposta vazia');
+        try { return JSON.parse(t); }
+        catch (e) { throw apiError(url, r.status, 'A resposta não é um JSON válido'); }
+      });
+    }, function (err) {
+      clearTimeout(timer);
+      if (err && err.name === 'AbortError') throw apiError(url, 0, 'Timeout: sem resposta em 15 s');
+      throw apiError(url, 0, 'Falha de rede ou bloqueio de CORS (' + ((err && err.message) || err) + ')');
     });
   }
 
+  function clearError() { var box = $('aErro'); box.hidden = true; box.innerHTML = ''; }
+
+  function showError(err, retry) {
+    var box = $('aErro');
+    box.innerHTML = '';
+    box.hidden = false;
+    box.appendChild(el('p', { textContent: 'Erro ao consultar a API do DofusDB.' }));
+    var ul = el('ul');
+    ul.appendChild(el('li', { textContent: 'Status HTTP: ' + (err.status ? err.status : 'sem resposta (0)') }));
+    ul.appendChild(el('li', { textContent: 'URL: ' + (err.url || '(desconhecida)') }));
+    ul.appendChild(el('li', { textContent: 'Motivo: ' + (err.message || String(err)) }));
+    box.appendChild(ul);
+    var b = el('button', { type: 'button', textContent: 'Tentar novamente' });
+    b.addEventListener('click', function () { clearError(); retry(); });
+    box.appendChild(b);
+  }
+
+  function setStatus(t) { $('aStatus').textContent = t; }
+
   function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-  function searchMonsters(term) {
-    var langs = ['pt', 'en', 'fr'];
-    var rx = encodeURIComponent(escRegex(term));
-    function tryLang(i) {
-      if (i >= langs.length) return Promise.resolve([]);
-      var l = langs[i];
-      var path = '/monsters?name.' + l + '[$regex]=' + rx + '&name.' + l + '[$options]=i&$limit=10';
-      return api(path).then(function (res) {
-        var data = (res && res.data) || [];
-        return data.length ? data : tryLang(i + 1);
+  // Padrão que ignora maiúsculas e acentos sem depender de $options.
+  function ciPattern(term) {
+    var groups = { a: 'aàáâãä', e: 'eèéêë', i: 'iìíîï', o: 'oòóôõö', u: 'uùúûü', c: 'cç', n: 'nñ' };
+    return term.split('').map(function (ch) {
+      var lower = ch.toLowerCase();
+      var base = lower.normalize('NFD').replace(/[̀-ͯ]/g, '');
+      var set = groups[base];
+      if (set) return '[' + set + set.toUpperCase() + ']';
+      if (lower !== ch.toUpperCase()) return '[' + lower + ch.toUpperCase() + ']';
+      return escRegex(ch);
+    }).join('');
+  }
+
+  // Estratégias de filtro em ordem de preferência; a primeira aceita pela API é memorizada.
+  var FILTER_MODES = ['regexOpt', 'regexCI', 'like'];
+  var okMode = null, okSort = null, serverSorted = true;
+
+  function listPairs(withSort, mode) {
+    var a = state.adv;
+    var pairs = [['$limit', a.limit], ['$skip', (a.page - 1) * a.limit]];
+    var term = (a.query || '').trim();
+    if (term) {
+      if (mode === 'regexOpt') {
+        pairs.push(['name.pt[$regex]', escRegex(term)]);
+        pairs.push(['name.pt[$options]', 'i']);
+      } else if (mode === 'regexCI') {
+        pairs.push(['name.pt[$regex]', ciPattern(term)]);
+      } else {
+        pairs.push(['name.pt[$like]', '%' + term + '%']);
+      }
+    }
+    if (withSort) pairs.push(['$sort[' + (a.sort === 'nivel' ? 'grades.0.level' : 'name.pt') + ']', a.dir === 'desc' ? -1 : 1]);
+    return pairs;
+  }
+
+  function isClientError(err) { return err && err.status >= 400 && err.status < 500; }
+
+  // Tenta combinações de filtro/ordenação até a API aceitar; lembra a que funcionou.
+  function fetchMonsterPage() {
+    var hasTerm = !!(state.adv.query || '').trim();
+    var modes = hasTerm ? (okMode ? [okMode] : FILTER_MODES) : [null];
+    var sorts = okSort === null ? [true, false] : [okSort];
+    var combos = [];
+    modes.forEach(function (m) { sorts.forEach(function (so) { combos.push([m, so]); }); });
+    var lastErr = null;
+    function next(i) {
+      if (i >= combos.length) {
+        if (lastErr) lastErr.message += ' (todas as ' + combos.length + ' variações de consulta foram recusadas)';
+        throw lastErr;
+      }
+      var c = combos[i];
+      return api('/monsters?' + qs(listPairs(c[1], c[0]))).then(function (res) {
+        if (c[0]) okMode = c[0];
+        okSort = c[1];
+        serverSorted = c[1];
+        return res;
+      }, function (err) {
+        lastErr = err;
+        if (isClientError(err)) return next(i + 1);
+        throw err;
       });
     }
-    return tryLang(0);
+    return next(0);
+  }
+
+  function levelMin(m) {
+    var lv = [];
+    if (Array.isArray(m.grades)) {
+      m.grades.forEach(function (g) { if (g && g.level !== undefined && g.level !== null) lv.push(Number(g.level)); });
+    }
+    if (!lv.length && m.level !== undefined && m.level !== null) lv.push(Number(m.level));
+    return lv.length ? Math.min.apply(null, lv) : Infinity;
+  }
+
+  function sortLocal(list) {
+    var a = state.adv, f = a.dir === 'desc' ? -1 : 1;
+    return list.slice().sort(function (x, y) {
+      if (a.sort === 'nivel') {
+        var d = levelMin(x) - levelMin(y);
+        if (d !== 0 && !isNaN(d)) return d * f;
+      }
+      return langName(x.name, '').localeCompare(langName(y.name, ''), 'pt', { sensitivity: 'base' }) * f;
+    });
+  }
+
+  function levelText(m) {
+    var lv = [];
+    if (Array.isArray(m.grades)) {
+      m.grades.forEach(function (g) { if (g && g.level !== undefined && g.level !== null) lv.push(Number(g.level)); });
+    }
+    if (!lv.length && m.level !== undefined && m.level !== null) lv.push(Number(m.level));
+    if (!lv.length) return '—';
+    var min = Math.min.apply(null, lv), max = Math.max.apply(null, lv);
+    return min === max ? String(min) : (min + ' a ' + max);
+  }
+
+  function imageUrl(m) {
+    var i = m.img;
+    if (typeof i === 'string' && i) return /^https?:/.test(i) ? i : API + (i.charAt(0) === '/' ? '' : '/') + i;
+    if (typeof i === 'number') return API + '/img/monsters/' + i + '.png';
+    return API + '/img/monsters/' + m.id + '.png';
+  }
+
+  function loadList() {
+    advLoaded = true;
+    var seq = ++listSeq;
+    clearError();
+    setStatus('Carregando monstros...');
+    fetchMonsterPage().then(function (res) {
+      if (seq !== listSeq) return;
+      if (!res || !Array.isArray(res.data)) throw apiError(API + '/monsters', 200, 'Formato de resposta inesperado (sem "data")');
+      listData = res.data;
+      if (!serverSorted) {
+        listData = sortLocal(listData);
+        $('aNota').textContent = 'A API recusou a ordenação por ' + (state.adv.sort === 'nivel' ? 'nível' : 'nome') +
+          '; a ordem vale apenas dentro desta página.';
+      } else {
+        $('aNota').textContent = '';
+      }
+      listTotal = Number(res.total) || res.data.length;
+      var pages = Math.max(1, Math.ceil(listTotal / state.adv.limit));
+      if (state.adv.page > pages && listTotal > 0) { state.adv.page = pages; save(); return loadList(); }
+      setStatus(listData.length ? '' : 'Nenhum monstro encontrado.');
+      renderList();
+    }).catch(function (err) {
+      if (seq !== listSeq) return;
+      setStatus('');
+      showError(err, loadList);
+    });
+  }
+
+  function renderList() {
+    var ul = $('aLista'); ul.innerHTML = '';
+    var selId = state.adv.monster ? state.adv.monster.id : null;
+    listData.forEach(function (m) {
+      var li = el('li');
+      var btn = el('button', { type: 'button' });
+      var selected = (m.id === selId);
+      btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+
+      var img = el('img', { src: imageUrl(m), alt: '', width: 48, height: 48, loading: 'lazy' });
+      img.addEventListener('error', function () { img.replaceWith(el('span', { textContent: '[sem imagem] ' })); });
+      btn.appendChild(img);
+
+      var nome = langName(m.name, 'Monstro #' + m.id);
+      var title = el('strong', { textContent: nome });
+      if (selected) {
+        var mk = el('mark'); mk.appendChild(title); btn.appendChild(mk);
+        btn.appendChild(el('span', { textContent: ' [Selecionado]' }));
+      } else {
+        btn.appendChild(title);
+      }
+      btn.appendChild(el('span', { textContent: ' — Nível: ' + levelText(m) }));
+      btn.addEventListener('click', function () { selectMonster(m); });
+      li.appendChild(btn); ul.appendChild(li);
+    });
+
+    var pages = Math.max(1, Math.ceil(listTotal / state.adv.limit));
+    $('aPagina').textContent = 'Página ' + state.adv.page + ' de ' + pages + ' (' + listTotal + ' monstros)';
+    $('aAnt').disabled = state.adv.page <= 1;
+    $('aProx').disabled = state.adv.page >= pages;
   }
 
   function fetchItemNames(ids) {
@@ -379,8 +603,9 @@
     var chunks = [];
     for (var i = 0; i < missing.length; i += 40) chunks.push(missing.slice(i, i + 40));
     return Promise.all(chunks.map(function (ch) {
-      var q = ch.map(function (id) { return 'id[$in][]=' + encodeURIComponent(id); }).join('&');
-      return api('/items?' + q + '&$limit=' + ch.length).then(function (res) {
+      var pairs = ch.map(function (id) { return ['id[$in][]', id]; });
+      pairs.push(['$limit', ch.length]);
+      return api('/items?' + qs(pairs)).then(function (res) {
         ((res && res.data) || []).forEach(function (it) {
           state.adv.names[it.id] = langName(it.name, 'Item #' + it.id);
         });
@@ -400,47 +625,30 @@
     return 5;
   }
 
-  var searchSeq = 0, debounceTimer = null;
-
-  function setStatus(t) { $('aStatus').textContent = t; }
-
-  function runSearch(term) {
-    var seq = ++searchSeq;
-    setStatus('Buscando...');
-    searchMonsters(term).then(function (list) {
-      if (seq !== searchSeq) return;
-      var ul = $('aSugestoes'); ul.innerHTML = '';
-      setStatus(list.length ? '' : 'Nenhuma criatura encontrada.');
-      list.forEach(function (m) {
-        var li = el('li');
-        var b = el('button', { type: 'button', textContent: langName(m.name, 'Monstro #' + m.id) + ' (id ' + m.id + ')' });
-        b.addEventListener('click', function () { selectMonster(m); });
-        li.appendChild(b); ul.appendChild(li);
-      });
-    }).catch(function () {
-      if (seq !== searchSeq) return;
-      setStatus('Erro ao consultar a API do DofusDB. Verifique a conexão e tente novamente.');
-    });
-  }
-
   function selectMonster(m) {
-    var drops = (m.drops || []).map(function (d) {
-      return {
-        objectId: d.objectId,
-        pct: [1, 2, 3, 4, 5].map(function (g) { return gradePct(d, g); })
-      };
-    });
-    state.adv.monster = { id: m.id, name: langName(m.name, 'Monstro #' + m.id), drops: drops };
-    state.adv.grade = pickDefaultGrade((m.drops || []));
-    $('aSugestoes').innerHTML = '';
-    setStatus('Carregando itens...');
-    save();
-    fetchItemNames(drops.map(function (d) { return d.objectId; })).then(function () {
-      setStatus(drops.length ? '' : 'Esta criatura não possui drops cadastrados.');
-      buildAdv();
-    }).catch(function () {
-      setStatus('Não foi possível obter os nomes dos itens; exibindo IDs.');
-      buildAdv();
+    clearError();
+    var ready = Array.isArray(m.drops) ? Promise.resolve(m) : api('/monsters/' + encodeURIComponent(m.id));
+    setStatus('Carregando drops...');
+    ready.then(function (full) {
+      var raw = full.drops || [];
+      var drops = raw.map(function (d) {
+        return { objectId: d.objectId, pct: [1, 2, 3, 4, 5].map(function (g) { return gradePct(d, g); }) };
+      });
+      state.adv.monster = { id: full.id, name: langName(full.name, 'Monstro #' + full.id), drops: drops };
+      state.adv.grade = pickDefaultGrade(raw);
+      save();
+      renderList();
+      return fetchItemNames(drops.map(function (d) { return d.objectId; })).then(function () {
+        setStatus(drops.length ? '' : 'Esta criatura não possui drops cadastrados.');
+        buildAdv();
+      }, function (err) {
+        setStatus('');
+        showError(err, function () { selectMonster(m); });
+        buildAdv();
+      });
+    }).catch(function (err) {
+      setStatus('');
+      showError(err, function () { selectMonster(m); });
     });
   }
 
@@ -499,16 +707,41 @@
   }
 
   function initAdv() {
-    $('aBusca').value = state.adv.query || '';
+    var a = state.adv;
+    if ([20, 40, 60, 80, 100].indexOf(Number(a.limit)) < 0) a.limit = 20;
+    a.limit = Number(a.limit);
+    if (!(a.page >= 1)) a.page = 1;
+    $('aBusca').value = a.query || '';
+    $('aLimit').value = String(a.limit);
+
     $('aBusca').addEventListener('input', function () {
-      var term = this.value.trim();
-      state.adv.query = this.value; save();
+      a.query = this.value; a.page = 1; save();
       clearTimeout(debounceTimer);
-      if (term.length < 2) { searchSeq++; $('aSugestoes').innerHTML = ''; setStatus(''); return; }
-      debounceTimer = setTimeout(function () { runSearch(term); }, 400);
+      debounceTimer = setTimeout(loadList, 400);
+    });
+    $('aLimpar').addEventListener('click', function () {
+      $('aBusca').value = ''; a.query = ''; a.page = 1; save();
+      clearTimeout(debounceTimer); loadList();
+    });
+    $('aOrdem').value = a.sort === 'nivel' ? 'nivel' : 'nome';
+    $('aDir').value = a.dir === 'desc' ? 'desc' : 'asc';
+    function onSort() {
+      a.sort = $('aOrdem').value; a.dir = $('aDir').value; a.page = 1;
+      okSort = null; save(); loadList();
+    }
+    $('aOrdem').addEventListener('change', onSort);
+    $('aDir').addEventListener('change', onSort);
+    $('aLimit').addEventListener('change', function () {
+      a.limit = parseInt(this.value, 10); a.page = 1; save(); loadList();
+    });
+    $('aAnt').addEventListener('click', function () {
+      if (a.page > 1) { a.page--; save(); loadList(); }
+    });
+    $('aProx').addEventListener('click', function () {
+      a.page++; save(); loadList();
     });
     $('aGrau').addEventListener('change', function () {
-      state.adv.grade = parseInt(this.value, 10); save(); updateAdv();
+      a.grade = parseInt(this.value, 10); save(); updateAdv();
     });
     buildAdv();
   }

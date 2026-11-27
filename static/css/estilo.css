@@ -21,12 +21,12 @@ Versão do Guaraná neste arquivo: 1.0.0
 @property --cor-1 {
     syntax: "<color>";
     inherits: true;
-    initial-value: hsl(213 58% 49%);
+    initial-value: hsl(213, 74%, 29%);
 }
 @property --cor-2 {
     syntax: "<color>";
     inherits: true;
-    initial-value: hsl(258 45% 66%);
+    initial-value: hsl(258, 32%, 55%);
 }
 @property --cor-3 {
     syntax: "<color>";
@@ -91,6 +91,10 @@ Versão do Guaraná neste arquivo: 1.0.0
         color-scheme: var(--modo);
     }
 
+    h1,h2,h3,h4,h5,h6 {
+        --fonte: "Grenze", serif;
+    }
+
     /* TEMAS */
     /* temas claro e escuro são para dar opção pro usuário não usar o modo do navegador */
     .tema_light {
@@ -115,3 +119,5 @@ Versão do Guaraná neste arquivo: 1.0.0
 
     }
 }
+
+/* @import url(alimentar_pet.css); */
