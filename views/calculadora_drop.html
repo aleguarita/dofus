@@ -5,126 +5,134 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <link href="https://fonts.googleapis.com/css2?family=Grenze:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../static/css/estilo-min.css">
+<link rel="stylesheet" href="../static/css/simulador_drop.css">
 <title>Simulador de Drop</title>
 </head>
 <body>
 
-<h1>Simulador de Drop</h1>
+<nav class="menu">
 
-<!-- Seção 1: Grupo -->
-<fieldset>
-  <legend>1. Grupo</legend>
-  <p><button type="button" id="btnAddChar">Adicionar Personagem</button></p>
-  <table>
-    <thead>
-      <tr><th>Em uso</th><th>Nome</th><th>PP (Prospecção)</th><th>Multiplicador final</th><th></th></tr>
-    </thead>
-    <tbody id="charList"></tbody>
-  </table>
-</fieldset>
+</nav>
 
-<!-- Seção 2: Modificadores -->
-<fieldset>
-  <legend>2. Modificadores globais da luta</legend>
-  <p><label><input type="checkbox" id="modShield"> Ankama Shield (+5%, 1.05x)</label></p>
-  <p><label>Desafio (%): <input type="number" id="modDesafio" step="any"></label></p>
-  <p><label>Anomalia (%): <input type="number" id="modAnomalia" min="0" max="120" step="any"></label></p>
-  <p><label>Extras (%): <input type="number" id="modExtras" step="any"></label></p>
-</fieldset>
+<header class="cabecalho">
+  <h1>Simulador de Drop</h1>
+</header>
 
-<!-- Seção 3: Abas -->
-<fieldset>
-  <legend>3. Simulações</legend>
-  <p>
-    <button type="button" id="tabBtn-simple">Simulação Simples</button>
-    <button type="button" id="tabBtn-creature">Simulação de Criatura</button>
-    <button type="button" id="tabBtn-adv">Simulação Avançada (DofusDB)</button>
-  </p>
+<main>
 
-  <!-- Aba 1 -->
-  <div id="tab-simple">
-    <h2>Simulação Simples</h2>
-    <p><label>Nome do Produto: <input type="text" id="sNome"></label></p>
-    <p><label>Taxa de Drop Base (%): <input type="number" id="sTaxa" min="0" step="any"></label></p>
-    <p><label>Valor Unitário (Kamas): <input type="number" id="sValor" min="0" step="any"></label></p>
-    <p><label>Quantidade Desejada: <input type="number" id="sQtd" min="0" step="any"></label></p>
-    <h3>Resultados</h3>
-    <table>
-      <thead><tr><th>Personagem</th><th>Chance individual (%)</th><th>Valor médio (Kamas)</th></tr></thead>
-      <tbody id="sRows"></tbody>
+  <section>
+    <h1>Grupo</h1>
+    <p><button type="button" id="btnAddChar">Adicionar Personagem</button></p>
+    <table class="tabela">
+      <thead>
+        <tr><th>Em uso</th><th>Nome</th><th>PP (Prospecção)</th><th>Multiplicador final</th><th></th></tr>
+      </thead>
+      <tbody id="charList"></tbody>
     </table>
-    <p>Valor total da luta: <strong id="sTotal">0</strong> Kamas</p>
-    <p>Chance do item sair na luta (pelo menos 1): <strong id="sGrupo">0</strong>%</p>
-    <p>Média de lutas necessárias: <strong id="sLutas">—</strong></p>
-  </div>
+  </section>
+  
+  <section>
+    <h1>Modificadores globais da luta</h1>
+    <p><label><input type="checkbox" id="modShield"> Ankama Shield (+5%, 1.05x)</label></p>
+    <p><label>Desafio (%): <input type="number" id="modDesafio" step="any"></label></p>
+    <p><label>Anomalia (%): <input type="number" id="modAnomalia" min="0" max="120" step="any"></label></p>
+    <p><label>Extras (%): <input type="number" id="modExtras" step="any"></label></p>
+  </section>
+  
+  <section>
+    <h1>Simulações</h1>
 
-  <!-- Aba 2 -->
-  <div id="tab-creature">
-    <h2>Simulação de Criatura (Grupo)</h2>
-    <p><label>Nome da Criatura: <input type="text" id="cNome"></label></p>
-    <h3>Itens dropáveis</h3>
-    <p><button type="button" id="btnAddItem">Adicionar Item</button></p>
-    <table>
-      <thead><tr><th>Nome do Item</th><th>Taxa de Drop Base (%)</th><th>Valor Unitário (Kamas)</th><th></th></tr></thead>
-      <tbody id="cItems"></tbody>
-    </table>
-    <h3>Resultados</h3>
-    <table>
-      <thead><tr><th>Item</th><th>Chance total do grupo (ao menos 1) (%)</th><th>Valor médio esperado (Kamas)</th></tr></thead>
-      <tbody id="cRows"></tbody>
-    </table>
-    <p>Valor total da luta com a criatura: <strong id="cTotal">0</strong> Kamas</p>
-  </div>
-
-  <!-- Aba 3 -->
-  <div id="tab-adv">
-    <h2>Simulação Avançada de Criatura (DofusDB)</h2>
     <p>
-      <label>Filtrar por nome (português): <input type="search" id="aBusca" autocomplete="off" placeholder="Digite parte do nome"></label>
-      <button type="button" id="aLimpar">Limpar busca</button>
+      <button type="button" id="tabBtn-simple">Simulação Simples</button>
+      <button type="button" id="tabBtn-creature">Simulação de Criatura</button>
+      <button type="button" id="tabBtn-adv">Simulação Avançada (DofusDB)</button>
     </p>
-    <p><label>Monstros por página:
-      <select id="aLimit">
-        <option value="20">20</option>
-        <option value="40">40</option>
-        <option value="60">60</option>
-        <option value="80">80</option>
-        <option value="100">100</option>
-      </select></label></p>
-    <p>
-      <label>Ordenar por:
-        <select id="aOrdem">
-          <option value="nome">Nome</option>
-          <option value="nivel">Nível</option>
-        </select></label>
-      <label>Direção:
-        <select id="aDir">
-          <option value="asc">Crescente</option>
-          <option value="desc">Decrescente</option>
-        </select></label>
-    </p>
-    <p id="aNota"></p>
-    <div id="aErro" role="alert" hidden></div>
-    <p id="aStatus"></p>
-    <ul id="aLista"></ul>
-    <p>
-      <button type="button" id="aAnt">Anterior</button>
-      <span id="aPagina"></span>
-      <button type="button" id="aProx">Próxima</button>
-    </p>
-
-    <div id="aMonster" hidden>
-      <h3>Resultado: <span id="aNome"></span></h3>
-      <p><label>Grau: <select id="aGrau"></select></label></p>
+  
+    <!-- Aba 1 -->
+    <div id="tab-simple">
+      <h2>Simulação Simples</h2>
+      <p><label>Nome do Produto: <input type="text" id="sNome"></label></p>
+      <p><label>Taxa de Drop Base (%): <input type="number" id="sTaxa" min="0" step="any"></label></p>
+      <p><label>Valor Unitário (Kamas): <input type="number" id="sValor" min="0" step="any"></label></p>
+      <p><label>Quantidade Desejada: <input type="number" id="sQtd" min="0" step="any"></label></p>
+      <h3>Resultados</h3>
       <table>
-        <thead><tr><th>Item</th><th>Taxa base (%)</th><th>Valor Unitário (Kamas)</th><th>Chance total do grupo (%)</th><th>Valor médio esperado (Kamas)</th></tr></thead>
-        <tbody id="aRows"></tbody>
+        <thead><tr><th>Personagem</th><th>Chance individual (%)</th><th>Valor médio (Kamas)</th></tr></thead>
+        <tbody id="sRows"></tbody>
       </table>
-      <p>Valor total da luta com a criatura: <strong id="aTotal">0</strong> Kamas</p>
+      <p>Valor total da luta: <strong id="sTotal">0</strong> Kamas</p>
+      <p>Chance do item sair na luta (pelo menos 1): <strong id="sGrupo">0</strong>%</p>
+      <p>Média de lutas necessárias: <strong id="sLutas">—</strong></p>
     </div>
-  </div>
-</fieldset>
+  
+    <!-- Aba 2 -->
+    <div id="tab-creature">
+      <h2>Simulação de Criatura (Grupo)</h2>
+      <p><label>Nome da Criatura: <input type="text" id="cNome"></label></p>
+      <h3>Itens dropáveis</h3>
+      <p><button type="button" id="btnAddItem">Adicionar Item</button></p>
+      <table>
+        <thead><tr><th>Nome do Item</th><th>Taxa de Drop Base (%)</th><th>Valor Unitário (Kamas)</th><th></th></tr></thead>
+        <tbody id="cItems"></tbody>
+      </table>
+      <h3>Resultados</h3>
+      <table>
+        <thead><tr><th>Item</th><th>Chance total do grupo (ao menos 1) (%)</th><th>Valor médio esperado (Kamas)</th></tr></thead>
+        <tbody id="cRows"></tbody>
+      </table>
+      <p>Valor total da luta com a criatura: <strong id="cTotal">0</strong> Kamas</p>
+    </div>
+  
+    <!-- Aba 3 -->
+    <div id="tab-adv">
+      <h2>Simulação Avançada de Criatura (DofusDB)</h2>
+      <p>
+        <label>Filtrar por nome (português): <input type="search" id="aBusca" autocomplete="off" placeholder="Digite parte do nome"></label>
+        <button type="button" id="aLimpar">Limpar busca</button>
+      </p>
+      <p><label>Monstros por página:
+        <select id="aLimit">
+          <option value="20">20</option>
+          <option value="40">40</option>
+          <option value="60">60</option>
+          <option value="80">80</option>
+          <option value="100">100</option>
+        </select></label></p>
+      <p>
+        <label>Ordenar por:
+          <select id="aOrdem">
+            <option value="nome">Nome</option>
+            <option value="nivel">Nível</option>
+          </select></label>
+        <label>Direção:
+          <select id="aDir">
+            <option value="asc">Crescente</option>
+            <option value="desc">Decrescente</option>
+          </select></label>
+      </p>
+      <p id="aNota"></p>
+      <div id="aErro" role="alert" hidden></div>
+      <p id="aStatus"></p>
+      <ul id="aLista"></ul>
+      <p>
+        <button type="button" id="aAnt">Anterior</button>
+        <span id="aPagina"></span>
+        <button type="button" id="aProx">Próxima</button>
+      </p>
+  
+      <div id="aMonster" hidden>
+        <h3>Resultado: <span id="aNome"></span></h3>
+        <p><label>Grau: <select id="aGrau"></select></label></p>
+        <table>
+          <thead><tr><th>Item</th><th>Taxa base (%)</th><th>Valor Unitário (Kamas)</th><th>Chance total do grupo (%)</th><th>Valor médio esperado (Kamas)</th></tr></thead>
+          <tbody id="aRows"></tbody>
+        </table>
+        <p>Valor total da luta com a criatura: <strong id="aTotal">0</strong> Kamas</p>
+      </div>
+    </div>
+  </section>
+</main>
+
 
 <script>
 (function () {
