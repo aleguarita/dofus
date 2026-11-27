@@ -84,7 +84,7 @@ Versão do Guaraná neste arquivo: 1.0.0
         --cor-link: var(--cor-3);
         --cor-hover: hsl(from var(--cor-link) h s calc(l * 1.35));
         --cor-visitado: var(--cor-link);
-        --cor-titulo: var(--cor-2);
+        --cor-titulo: var(--cor-1);
 
         --fonte: var(--sans);
     
@@ -93,6 +93,9 @@ Versão do Guaraná neste arquivo: 1.0.0
 
     h1,h2,h3,h4,h5,h6 {
         --fonte: "Grenze", serif;
+        --peso: 900;
+        font-family: var(--fonte);
+        font-weight: var(--peso);
     }
 
     /* TEMAS */
@@ -120,4 +123,5 @@ Versão do Guaraná neste arquivo: 1.0.0
     }
 }
 
-/* @import url(alimentar_pet.css); */
+@import url(menu.css);
+@import url(alimentar_pet.css);

@@ -1,0 +1,16 @@
+@layer layout {
+    .menu {
+        display: none; /* por ora */
+        --cor-base: var(--cor-3);
+        background-color: light-dark(
+            hsl(from var(--cor-base) h s calc(l * 0.25)),
+            hsl(from var(--cor-base) h calc(s * .45) calc(l * 1.35))
+        );
+
+        --cor-titulo: red;
+
+        h1 {
+            margin: 0;
+        }
+    }
+}
